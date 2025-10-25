@@ -703,4 +703,41 @@ a {
   .form-page .btn-group {
     flex-direction: column;
   }
+
+  /* ==== FOOTER STYLE ==== */
+.footer {
+  background-color: #1e40af;
+  color: white;
+  padding: 24px 16px;
+  margin-top: 40px;
+}
+
+.footer-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.footer-text {
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.footer-link {
+  font-size: 13px;
+  margin: 6px 0;
+  font-weight: 600;
+}
+
+.footer-copy {
+  font-size: 11px;
+  margin-top: 16px;
+  opacity: 0.8;
+}
 }

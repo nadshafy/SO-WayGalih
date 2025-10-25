@@ -120,7 +120,7 @@ export default function Perusahaan() {
             </div>
 
             <div className="btn-group">
-              <Link href="/" className="btn-secondary">Kembali</Link>
+              <Link href="/index" className="btn-secondary">Kembali</Link>
               <button type="submit">Kirim</button>
             </div>
           </form>
