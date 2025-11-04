@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-import { app } from "@/firebaseConfig";
+import app  from "@/src/firebaseConfig";
 import { useState } from "react";
 
 type AuthCardProps = {
