@@ -1,12 +1,37 @@
 "use client";
 
 import Image from "next/image";
+import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { app } from "@/firebaseConfig";
+import { useState } from "react";
 
 type AuthCardProps = {
   buttonLabel: string;
 };
 
 const AuthCard = ({ buttonLabel }: AuthCardProps) => {
+  const [loading, setLoading] = useState(false);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+
+  const handleLogin = async () => {
+    setLoading(true);
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      console.log("Login berhasil:", user);
+
+      // Misal redirect ke dashboard
+      window.location.href = "/dashboard";
+    } catch (error) {
+      console.error("Login gagal:", error);
+      alert("Login gagal, silakan coba lagi.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="w-full max-w-sm rounded-3xl bg-white p-10 text-center shadow-xl">
       <div className="flex flex-col items-center">
@@ -28,7 +53,13 @@ const AuthCard = ({ buttonLabel }: AuthCardProps) => {
 
       <button
         type="button"
-        className="mt-10 flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600 shadow-sm transition hover:-translate-y-0.5 hover:border-[#0a3d91] hover:text-[#0a3d91]"
+        onClick={handleLogin}
+        disabled={loading}
+        className={`mt-10 flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold shadow-sm transition ${
+          loading
+            ? "cursor-not-allowed opacity-70"
+            : "hover:-translate-y-0.5 hover:border-[#0a3d91] hover:text-[#0a3d91]"
+        }`}
       >
         <Image
           src="/images/google-icon.svg"
@@ -36,7 +67,7 @@ const AuthCard = ({ buttonLabel }: AuthCardProps) => {
           width={22}
           height={22}
         />
-        {buttonLabel}
+        {loading ? "Memproses..." : buttonLabel}
       </button>
     </div>
   );

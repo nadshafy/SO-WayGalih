@@ -2,24 +2,32 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-import { getAnalytics } from "firebase/analytics";
+import { getAnalytics, isSupported } from "firebase/analytics";
 
-// Konfigurasi Firebase
+// Ambil konfigurasi dari environment variable
 const firebaseConfig = {
-  apiKey: "AIzaSyBN-dH4P5colMcy935-VDDq_-8N8WhlYD8",
-  authDomain: "balaidesawaygalih.firebaseapp.com",
-  projectId: "balaidesawaygalih",
-  storageBucket: "balaidesawaygalih.firebasestorage.app",
-  messagingSenderId: "909147633557",
-  appId: "1:909147633557:web:a55fc8840a4b203314a89c",
-  measurementId: "G-RG6TB50K3V"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
 // Inisialisasi Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 
-// Ekspor layanan yang akan dipakai di React
-export const db = getFirestore(app);  // untuk database
-export const auth = getAuth(app);     // untuk login user
+// Inisialisasi layanan Firebase
+export const db = getFirestore(app);
+export const auth = getAuth(app);
+
+// Analytics hanya aktif di browser (bukan di server Next.js)
+let analytics;
+if (typeof window !== "undefined") {
+  isSupported().then((yes) => {
+    if (yes) analytics = getAnalytics(app);
+  });
+}
+
 export default app;
