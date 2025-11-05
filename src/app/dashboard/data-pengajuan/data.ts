@@ -1,0 +1,80 @@
+import type { Pengajuan } from "@/src/lib/pengajuan";
+
+export const pengajuanData: Pengajuan[] = [
+  {
+    id: 1,
+    nama: "Anisa Putri",
+    jenis: "Surat Keterangan Domisili",
+    tanggal: "06-09-2025",
+    status: "",
+    nik: "1203********0001",
+    alamat: "Dusun 1, RT 002 / RW 001, Desa Way Galih",
+    catatan: "Permohonan domisili untuk keperluan administrasi pekerjaan.",
+    lampiran: [
+      { label: "KTP Pemohon", url: "#" },
+      { label: "KK", url: "#" },
+      { label: "Pengantar RT/RW", url: "#" },
+    ],
+  },
+  {
+    id: 2,
+    nama: "Budi Santoso",
+    jenis: "Surat Keterangan Domisili Lembaga",
+    tanggal: "07-09-2025",
+    status: "",
+    nik: "1203********0002",
+    alamat: "Dusun 2, RT 003 / RW 002, Desa Way Galih",
+    catatan: "Pengajuan domisili untuk Lembaga Pendidikan Tunas Bangsa.",
+    lampiran: [
+      { label: "KTP Penanggung Jawab", url: "#" },
+      { label: "Akta Pendirian Lembaga", url: "#" },
+      { label: "Pengantar RT/RW", url: "#" },
+    ],
+  },
+  {
+    id: 3,
+    nama: "Citra Pratiwi",
+    jenis: "Surat Keterangan Tidak Mampu (SKTM)",
+    tanggal: "08-09-2025",
+    status: "",
+    nik: "1203********0003",
+    alamat: "Dusun 4, RT 005 / RW 003, Desa Way Galih",
+    catatan: "SKTM digunakan sebagai persyaratan bantuan BPJS Kesehatan.",
+    lampiran: [
+      { label: "KTP Pemohon", url: "#" },
+      { label: "Surat Pengantar RT/RW", url: "#" },
+      { label: "Surat Keterangan Penghasilan", url: "#" },
+    ],
+  },
+  {
+    id: 4,
+    nama: "Dedi Nugraha",
+    jenis: "Surat Keterangan Asal-Usul Keluarga",
+    tanggal: "09-09-2025",
+    status: "",
+    nik: "1203********0004",
+    alamat: "Dusun 5, RT 006 / RW 004, Desa Way Galih",
+    catatan:
+      "Dokumen dibutuhkan sebagai pelengkap syarat pernikahan di luar kota.",
+    lampiran: [
+      { label: "KTP Pemohon", url: "#" },
+      { label: "KK", url: "#" },
+      { label: "Surat Keterangan RT/RW", url: "#" },
+    ],
+  },
+  {
+    id: 5,
+    nama: "Eka Lestari",
+    jenis: "Surat Keterangan Tidak Mampu (SKTM) Sekolah",
+    tanggal: "10-09-2025",
+    status: "",
+    nik: "1203********0005",
+    alamat: "Dusun 3, RT 004 / RW 002, Desa Way Galih",
+    catatan: "Pengajuan SKTM sekolah untuk keperluan beasiswa siswa.",
+    lampiran: [
+      { label: "KTP Orang Tua", url: "#" },
+      { label: "KK", url: "#" },
+      { label: "Surat Keterangan Sekolah", url: "#" },
+    ],
+  },
+];
