@@ -1,13 +1,13 @@
-"use client";
+// src/lib/auth/roles.ts
 
-const adminList = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "")
-  .split(",")
-  .map((entry) => entry.trim().toLowerCase())
-  .filter(Boolean);
+// Daftar email admin
+export const ADMIN_EMAILS = [
+  "admin@gmail.com",       // ubah sesuai email admin kamu
+  "kepaladesa@gmail.com",
+];
 
-export const isAdminEmail = (email: string | null | undefined) => {
+// Cek apakah email termasuk admin
+export function isAdminEmail(email?: string | null): boolean {
   if (!email) return false;
-  return adminList.includes(email.toLowerCase());
-};
-
-export const getDeclaredAdminEmails = () => [...adminList];
+  return ADMIN_EMAILS.includes(email);
+}

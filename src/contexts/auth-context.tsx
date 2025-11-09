@@ -9,9 +9,10 @@ import {
   useState,
 } from "react";
 import { onAuthStateChanged, signOut, type User } from "firebase/auth";
-
 import { auth } from "@/src/lib/firebase/init";
-import { isAdminEmail } from "@/src/lib/auth/roles";
+
+// Admin UID (yang kamu daftarkan di Firebase)
+const ADMIN_UID = "CfLWcqwwaTb3zoC0oS0ckXh4sjV2";
 
 type UserRole = "admin" | "user";
 
@@ -25,9 +26,10 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+// ✅ Role ditentukan berdasarkan UID, bukan email
 const determineRole = (user: User | null): UserRole | null => {
   if (!user) return null;
-  return isAdminEmail(user.email) ? "admin" : "user";
+  return user.uid === ADMIN_UID ? "admin" : "user";
 };
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -72,4 +74,3 @@ export const useAuth = () => {
   }
   return context;
 };
-

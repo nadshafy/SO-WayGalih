@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   DASHBOARD_DATASET,
   DASHBOARD_SUMMARY,
@@ -18,15 +18,42 @@ import { useAuth } from "@/src/contexts/auth-context";
 
 const DEFAULT_TAB: DashboardTabKey = "harian";
 
+// UID admin kamu
+const ADMIN_UID = "CfLWcqwwaTb3zoC0oS0ckXh4sjV2";
+
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<DashboardTabKey>(DEFAULT_TAB);
   const router = useRouter();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth(); // ambil data user dari context
+
+  // Cek role user setelah login
+  useEffect(() => {
+    if (!user) return; // kalau belum login, tunggu
+
+    if (user.uid !== ADMIN_UID) {
+      console.warn("⛔ Bukan admin, diarahkan ke halaman pengguna...");
+      router.replace("/halaman-pengguna");
+    } else {
+      console.log("✅ Admin terdeteksi, tampilkan dashboard.");
+    }
+  }, [user, router]);
 
   const handleLogout = useCallback(async () => {
     await logout();
     router.replace("/login");
   }, [logout, router]);
+
+  // Kalau belum login, tampilkan loading sementara
+  if (!user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-100">
+        <p className="text-gray-600">Memuat...</p>
+      </div>
+    );
+  }
+
+  // Kalau bukan admin, jangan render dashboard (biar tidak kedip)
+  if (user.uid !== ADMIN_UID) return null;
 
   return (
     <>
