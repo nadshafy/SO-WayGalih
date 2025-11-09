@@ -9,10 +9,35 @@ import SKTMPageContent from "@/components/sktm/page-content";
 export default function SKTMPage() {
   const router = useRouter();
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    alert("Form berhasil dikirim! Data Anda sedang diproses.");
-    router.push("/status");
+
+    const formData = new FormData(event.currentTarget);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+      const response = await fetch("/script/surat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...data,
+          jenisSurat: "sktm",
+        }),
+      });
+
+      if (!response.ok) throw new Error("Gagal mengirim data ke server.");
+
+      const result = await response.json();
+      console.log("Response dari server:", result);
+
+      alert("Form berhasil dikirim! Data Anda sedang diproses.");
+      router.push("/status");
+    } catch (error) {
+      console.error("Gagal mengirim data:", error);
+      alert("Terjadi kesalahan saat mengirim data. Silakan coba lagi nanti.");
+    }
   };
 
   return (

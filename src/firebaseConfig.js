@@ -1,10 +1,8 @@
-// src/firebaseConfig.js
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getAnalytics, isSupported } from "firebase/analytics";
 
-// Ambil konfigurasi dari environment variable
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -15,14 +13,11 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-// Inisialisasi Firebase
 const app = initializeApp(firebaseConfig);
 
-// Inisialisasi layanan Firebase
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 
-// Analytics hanya aktif di browser (bukan di server Next.js)
 let analytics;
 if (typeof window !== "undefined") {
   isSupported().then((yes) => {
