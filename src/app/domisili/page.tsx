@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import Footer from "@/src/components/footer";
 import DomisiliPageContent from "@/src/components/domisili/page-content";
 import AuthGuard from "@/src/components/auth/auth-guard";
+import { db } from "@/src/lib/firebase/init"; 
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 export default function DomisiliPage() {
   const router = useRouter();
@@ -29,24 +31,33 @@ export default function DomisiliPage() {
     }
 
     try {
-      const response = await fetch("/script/surat", {
+      await addDoc(collection(db, "surat_domisili"), {
+        ...data,
+        jenisSurat: "domisili",
+        status: "diproses",
+        tanggal_pengajuan: serverTimestamp(),
+      });
+
+
+      const response = await fetch("/api/surat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...data,
-          jenisSurat: "domisili",
+          suratType: "domisili",
+          formData: data,
         }),
       });
 
-      if (!response.ok) throw new Error("Gagal menyimpan data");
+      if (!response.ok) throw new Error("Gagal menyimpan data ke server (API)");
 
       const result = await response.json();
       console.log("Response:", result);
 
       alert("Form berhasil dikirim! Data Anda sedang diproses.");
       router.push("/status");
+      
     } catch (error) {
       console.error("Gagal mengirim data:", error);
       alert("Terjadi kesalahan. Silakan coba lagi nanti.");

@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import Footer from "@/src/components/footer";
 import SKTMSPageContent from "@/src/components/sktms/page-content";
 import AuthGuard from "@/src/components/auth/auth-guard";
+import { db } from "@/src/lib/firebase/init";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 export default function SKTMSPage() {
   const router = useRouter();
@@ -13,24 +15,29 @@ export default function SKTMSPage() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    // Ambil semua data dari form
     const formData = new FormData(event.currentTarget);
     const data = Object.fromEntries(formData.entries());
 
     try {
-      // ✅ Kirim data ke route lokal Next.js
-      const response = await fetch("/script/surat", {
+      await addDoc(collection(db, "surat_sktms"), {
+        ...data,
+        jenisSurat: "sktms", 
+        status: "diproses",
+        tanggal_pengajuan: serverTimestamp(),
+      });
+
+      const response = await fetch("/api/surat", { 
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...data,
-          jenisSurat: "sktms", // penting agar Apps Script tahu ini SKTM Sekolah
+          suratType: "sktms",
+          formData: data,
         }),
       });
 
-      if (!response.ok) throw new Error("Gagal mengirim data ke server");
+      if (!response.ok) throw new Error("Gagal mengirim data ke server (API)");
 
       const result = await response.json();
       console.log("Response dari server:", result);

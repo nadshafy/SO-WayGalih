@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import Footer from "@/src/components/footer";
 import SKTMPageContent from "@/src/components/sktm/page-content";
 import AuthGuard from "@/src/components/auth/auth-guard";
+import { db } from "@/src/lib/firebase/init";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 export default function SKTMPage() {
   const router = useRouter();
@@ -17,18 +19,25 @@ export default function SKTMPage() {
     const data = Object.fromEntries(formData.entries());
 
     try {
-      const response = await fetch("/script/surat", {
+      await addDoc(collection(db, "surat_sktm"), {
+        ...data,
+        jenisSurat: "sktm",
+        status: "diproses",
+        tanggal_pengajuan: serverTimestamp(),
+      });
+
+      const response = await fetch("/api/surat", { 
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...data,
-          jenisSurat: "sktm",
+          suratType: "sktm",
+          formData: data,
         }),
       });
 
-      if (!response.ok) throw new Error("Gagal mengirim data ke server.");
+      if (!response.ok) throw new Error("Gagal mengirim data ke server (API).");
 
       const result = await response.json();
       console.log("Response dari server:", result);
