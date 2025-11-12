@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Head from "next/head";
 import { useRouter } from "next/navigation";
 
@@ -13,28 +13,43 @@ import {
   StatsOverview,
 } from "@/src/components/dashboard/data-pengajuan";
 import { useAuth } from "@/src/contexts/auth-context";
-import type {
+import {
   Pengajuan,
   PengajuanStatItem,
   PengajuanStatusFilter,
+  getPengajuanData,
 } from "@/src/lib/pengajuan";
-import { pengajuanData } from "./data";
+import { db } from "@/src/lib/firebase/init";
+import { doc, updateDoc } from "firebase/firestore";
 
 const PAGE_SIZE = 10;
 
 export default function DataPengajuan() {
   const router = useRouter();
-  const { logout } = useAuth();
-  const [data, setData] = useState<Pengajuan[]>(() =>
-    pengajuanData.map((item) => ({ ...item }))
-  );
+  const { logout, user } = useAuth();
+
+  const [data, setData] = useState<Pengajuan[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<Pengajuan | null>(null);
   const [reason, setReason] = useState("");
   const [reasonError, setReasonError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] =
-    useState<PengajuanStatusFilter>("all");
+  const [statusFilter, setStatusFilter] = useState<PengajuanStatusFilter>("all");
   const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const result = await getPengajuanData();
+        setData(result);
+      } catch (error) {
+        console.error("Gagal mengambil data pengajuan:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   const handleConfirmLogout = useCallback(async () => {
     await logout();
@@ -67,14 +82,11 @@ export default function DataPengajuan() {
         item.nama.toLowerCase().includes(keyword) ||
         item.jenis.toLowerCase().includes(keyword);
 
-      if (!matchesKeyword) {
-        return false;
-      }
+      if (!matchesKeyword) return false;
 
       if (statusFilter === "all") return true;
       if (statusFilter === "selesai") return status.includes("selesai");
       if (statusFilter === "ditolak") return status.includes("ditolak");
-
       return !status.includes("selesai") && !status.includes("ditolak");
     });
   }, [data, searchTerm, statusFilter]);
@@ -87,14 +99,42 @@ export default function DataPengajuan() {
     return filteredData.slice(start, start + PAGE_SIZE);
   }, [filteredData, currentPage]);
 
-  const setStatus = (id: number, status: string) => {
-    setData((previous) =>
-      previous.map((item) => (item.id === id ? { ...item, status } : item))
+  const setStatus = (id: string, status: string) => {
+    setData((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, status } : item))
     );
   };
 
-  const handleApprove = (item: Pengajuan) => {
-    setStatus(item.id, "Selesai");
+  const updateStatusInFirestore = async (id: string, status: string) => {
+    try {
+      const docRef = doc(db, "surat_pengajuan", id);
+      await updateDoc(docRef, { status });
+      console.log(`Status dokumen ${id} berhasil diupdate ke: ${status}`);
+    } catch (error: any) {
+      console.error("Gagal update status di Firestore:", error.code, error.message);
+      alert("Terjadi kesalahan saat memperbarui status di Firestore! Pastikan akun Anda adalah admin.");
+    }
+  };
+
+  const handleApprove = async (item: Pengajuan) => {
+    const newStatus = "Selesai";
+    setStatus(item.id, newStatus);
+    await updateStatusInFirestore(item.id, newStatus);
+  };
+
+  const handleRejectSubmit = async () => {
+    if (!reason.trim()) {
+      setReasonError("Harap tuliskan alasan penolakan terlebih dahulu.");
+      return;
+    }
+
+    if (selectedItem) {
+      const newStatus = `Ditolak - ${reason.trim()}`;
+      setStatus(selectedItem.id, newStatus);
+      await updateStatusInFirestore(selectedItem.id, newStatus);
+    }
+
+    handleRejectModalClose();
   };
 
   const handleViewDetail = (item: Pengajuan) => {
@@ -113,24 +153,9 @@ export default function DataPengajuan() {
     setReasonError("");
   };
 
-  const handleRejectSubmit = () => {
-    if (!reason.trim()) {
-      setReasonError("Harap tuliskan alasan penolakan terlebih dahulu.");
-      return;
-    }
-
-    if (selectedItem) {
-      setStatus(selectedItem.id, `Ditolak - ${reason.trim()}`);
-    }
-
-    handleRejectModalClose();
-  };
-
   const handleReasonChange = (value: string) => {
     setReason(value);
-    if (reasonError) {
-      setReasonError("");
-    }
+    if (reasonError) setReasonError("");
   };
 
   const handleSearchChange = (value: string) => {
@@ -142,6 +167,14 @@ export default function DataPengajuan() {
     setStatusFilter(value);
     setPage(1);
   };
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <p className="text-gray-600">Memuat data pengajuan...</p>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -166,7 +199,7 @@ export default function DataPengajuan() {
               </p>
             </div>
             <a
-              href="https://docs.google.com/spreadsheets"
+              href="https://docs.google.com/spreadsheets/d/1DvJr-7kXkqcajrJ4YejBgTLTRQNcx4x9kvcwYHl45Hs/edit?gid=0#gid=0"
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center justify-center rounded-xl bg-[#0a3d91] px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-[#082f74] hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0a3d91]/50"
@@ -208,12 +241,8 @@ export default function DataPengajuan() {
               totalPages={totalPages}
               pageSize={PAGE_SIZE}
               totalItems={filteredData.length}
-              onPrevious={() =>
-                setPage((previous) => Math.max(1, previous - 1))
-              }
-              onNext={() =>
-                setPage((previous) => Math.min(totalPages, previous + 1))
-              }
+              onPrevious={() => setPage((prev) => Math.max(1, prev - 1))}
+              onNext={() => setPage((prev) => Math.min(totalPages, prev + 1))}
             />
           </section>
         </main>

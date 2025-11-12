@@ -1,30 +1,35 @@
-export type PengajuanStatusFilter =
-  | "all"
-  | "selesai"
-  | "menunggu"
-  | "ditolak";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/src/lib/firebase/init";
 
-export type Pengajuan = {
-  id: number;
+export interface Lampiran {
+  label: string;
+  url: string;
+}
+
+export interface Pengajuan {
+  id: string;
   nama: string;
-  jenis:
-    | "Surat Keterangan Domisili"
-    | "Surat Keterangan Domisili Lembaga"
-    | "Surat Keterangan Tidak Mampu (SKTM)"
-    | "Surat Keterangan Asal-Usul Keluarga"
-    | "Surat Keterangan Tidak Mampu (SKTM) Sekolah";
+  jenis: string;
   tanggal: string;
   status: string;
   nik: string;
   alamat: string;
-  catatan?: string;
-  lampiran: Array<{
-    label: string;
-    url: string;
-  }>;
-};
+  catatan: string;
+  lampiran: Lampiran[];
+}
 
-export type PengajuanStatItem = {
+export type PengajuanStatusFilter = "all" | "selesai" | "ditolak" | "menunggu";
+
+export interface PengajuanStatItem {
   label: string;
   value: number;
-};
+}
+
+export async function getPengajuanData(): Promise<Pengajuan[]> {
+  const pengajuanCollection = collection(db, "surat_pengajuan");
+  const snapshot = await getDocs(pengajuanCollection);
+  return snapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  })) as Pengajuan[];
+}
