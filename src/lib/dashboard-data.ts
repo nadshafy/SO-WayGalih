@@ -1,4 +1,3 @@
-// src/lib/dashboard-data.ts
 "use client";
 
 import {
@@ -9,7 +8,6 @@ import {
 } from "firebase/firestore";
 import { db } from "@/src/lib/firebase/init";
 
-/* ---------------------- types ---------------------- */
 export type DashboardTabKey = "harian" | "mingguan" | "tahunan";
 
 export type DashboardTabItem = {
@@ -30,12 +28,6 @@ export type DashboardSummaryCard = {
   trend?: string;
 };
 
-/* ---------------------- static (backwards compatible) ---------------------- */
-/**
- * Supaya import lama seperti `DASHBOARD_DATASET` tetap valid,
- * kita pertahankan konstanta statis ini. Kamu boleh pakai ini
- * sebagai fallback jika belum ada dataset realtime.
- */
 export const DASHBOARD_TAB_ITEMS: DashboardTabItem[] = [
   { key: "harian", label: "Statistik Harian" },
   { key: "mingguan", label: "Statistik Mingguan" },
@@ -63,13 +55,6 @@ export const DASHBOARD_SUMMARY: DashboardSummaryCard[] = [
   { label: "Menunggu Verifikasi", value: 0, trend: "" },
 ];
 
-/* ---------------------- firestore helpers ---------------------- */
-
-/**
- * Subscribe to realtime summary counts in `surat_pengajuan`.
- * callback will receive DashboardSummaryCard[] on every change.
- * Returns unsubscribe function.
- */
 export function subscribeDashboardSummary(
   callback: (data: DashboardSummaryCard[]) => void
 ) {
@@ -108,15 +93,10 @@ export function subscribeDashboardSummary(
   return unsubscribe;
 }
 
-/**
- * One-time fetch for chart dataset. Converts tanggal_pengajuan timestamps
- * into counts per weekday for 'harian'. You can call this on mount.
- */
 export async function getDashboardDataset(): Promise<DashboardChartMap> {
   const snapshot = await getDocs(collection(db, "surat_pengajuan"));
   const docs = snapshot.docs.map((d) => d.data());
 
-  // prepare harian
   const hariLabels = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
   const harian = new Array(7).fill(0);
 
@@ -124,13 +104,12 @@ export async function getDashboardDataset(): Promise<DashboardChartMap> {
     const t = d.tanggal_pengajuan;
     if (t instanceof Timestamp) {
       const date = t.toDate();
-      const day = date.getDay(); // 0 = Sun, 1 = Mon, ...
-      const index = day === 0 ? 6 : day - 1; // make Monday index 0
+      const day = date.getDay(); 
+      const index = day === 0 ? 6 : day - 1; 
       harian[index] = (harian[index] || 0) + 1;
     }
   });
 
-  // Simple placeholder for mingguan/tahunan — bisa di-improve
   const mingguan = [harian.reduce((a, b) => a + b, 0)];
   while (mingguan.length < 4) mingguan.push(0);
 
