@@ -4,7 +4,8 @@ import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Head from "next/head";
 import { signInWithPopup } from "firebase/auth";
-import { auth, googleProvider } from "@/src/lib/firebase/init";
+import { auth, googleProvider, db } from "@/src/lib/firebase/init";
+import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import AuthCard from "@/src/components/shared/auth-card";
 import { useAuth } from "@/src/contexts/auth-context";
 
@@ -13,13 +14,11 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const { user, role, loading: authLoading } = useAuth();
 
-  const ADMIN_UID = "CfLWcqwwaTb3zoC0oS0ckXh4sjV2";
-
   useEffect(() => {
     if (authLoading) return;
     if (!user) return;
 
-    if (user.uid === ADMIN_UID || role === "admin") {
+    if (role === "admin") {
       router.replace("/dashboard");
     } else {
       router.replace("/halaman-pengguna");
@@ -35,14 +34,23 @@ export default function RegisterPage() {
 
       console.log("Pendaftaran berhasil. UID:", user.uid);
 
-      if (user.uid === ADMIN_UID) {
-        console.log("Role: ADMIN");
-        router.push("/dashboard");
+      const userRef = doc(db, "users", user.uid);
+      const existing = await getDoc(userRef);
+
+      if (!existing.exists()) {
+        await setDoc(userRef, {
+          uid: user.uid,
+          name: user.displayName,
+          email: user.email,
+          role: "user",
+          createdAt: serverTimestamp(),
+        });
+        console.log("User baru ditambahkan ke Firestore");
       } else {
-        console.log("Role: USER");
-        router.push("/halaman-pengguna");
+        console.log("ℹUser sudah terdaftar di Firestore");
       }
 
+      router.push("/halaman-pengguna");
     } catch (error: any) {
       console.error("Gagal daftar:", error.message);
       alert("Pendaftaran gagal: " + error.message);

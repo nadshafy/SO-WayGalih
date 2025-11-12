@@ -4,7 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Head from "next/head";
 import { signInWithPopup } from "firebase/auth";
-import { auth, googleProvider } from "@/src/lib/firebase/init";
+import { auth, googleProvider, db } from "@/src/lib/firebase/init";
+import { doc, getDoc } from "firebase/firestore";
 import AuthCard from "@/src/components/shared/auth-card";
 import { useAuth } from "@/src/contexts/auth-context";
 
@@ -13,13 +14,11 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const { user, role, loading: authLoading } = useAuth();
 
-  const ADMIN_UID = "CfLWcqwwaTb3zoC0oS0ckXh4sjV2";
-
   useEffect(() => {
     if (authLoading) return;
     if (!user) return;
 
-    if (user.uid === ADMIN_UID || role === "admin") {
+    if (role === "admin") {
       router.replace("/dashboard");
     } else {
       router.replace("/halaman-pengguna");
@@ -35,14 +34,20 @@ export default function LoginPage() {
 
       console.log("Login berhasil. UID:", user.uid);
 
-      if (user.uid === ADMIN_UID) {
-        console.log("Role terdeteksi: ADMIN");
-        router.push("/dashboard");
-      } else {
-        console.log("Role terdeteksi: USER");
-        router.push("/halaman-pengguna");
-      }
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (userDoc.exists()) {
+        const role = userDoc.data().role;
+        console.log("Role:", role);
 
+        if (role === "admin") {
+          router.push("/dashboard");
+        } else {
+          router.push("/halaman-pengguna");
+        }
+      } else {
+        alert("Akun belum terdaftar. Silakan daftar terlebih dahulu.");
+        router.push("/register");
+      }
     } catch (error: any) {
       console.error("Gagal login:", error.message);
       alert("Login gagal: " + error.message);
