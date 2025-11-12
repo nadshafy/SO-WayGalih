@@ -16,26 +16,47 @@ import {
 } from "@/src/components/dashboard";
 import { useAuth } from "@/src/contexts/auth-context";
 
-const DEFAULT_TAB: DashboardTabKey = "harian";
+import { db } from "@/src/lib/firebase/init";
+import { doc, getDoc } from "firebase/firestore";
 
-// UID admin kamu
-const ADMIN_UID = "CfLWcqwwaTb3zoC0oS0ckXh4sjV2";
+const DEFAULT_TAB: DashboardTabKey = "harian";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<DashboardTabKey>(DEFAULT_TAB);
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const router = useRouter();
-  const { user, logout } = useAuth(); // ambil data user dari context
+  const { user, logout } = useAuth();
 
-  // Cek role user setelah login
   useEffect(() => {
-    if (!user) return; // kalau belum login, tunggu
+    const checkAdminRole = async () => {
+      if (!user) return;
 
-    if (user.uid !== ADMIN_UID) {
-      console.warn("⛔ Bukan admin, diarahkan ke halaman pengguna...");
-      router.replace("/halaman-pengguna");
-    } else {
-      console.log("✅ Admin terdeteksi, tampilkan dashboard.");
-    }
+      try {
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+
+        if (userSnap.exists()) {
+          const data = userSnap.data();
+          if (data.role === "admin") {
+            console.log("Admin terdeteksi.");
+            setIsAdmin(true);
+          } else {
+            console.warn("Bukan admin, diarahkan ke halaman pengguna...");
+            setIsAdmin(false);
+            router.replace("/halaman-pengguna");
+          }
+        } else {
+          console.warn("Data user tidak ditemukan.");
+          setIsAdmin(false);
+          router.replace("/halaman-pengguna");
+        }
+      } catch (error) {
+        console.error("Gagal memeriksa role admin:", error);
+        setIsAdmin(false);
+      }
+    };
+
+    checkAdminRole();
   }, [user, router]);
 
   const handleLogout = useCallback(async () => {
@@ -43,17 +64,23 @@ export default function Dashboard() {
     router.replace("/login");
   }, [logout, router]);
 
-  // Kalau belum login, tampilkan loading sementara
   if (!user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-100">
-        <p className="text-gray-600">Memuat...</p>
+        <p className="text-gray-600">Memuat akun...</p>
       </div>
     );
   }
 
-  // Kalau bukan admin, jangan render dashboard (biar tidak kedip)
-  if (user.uid !== ADMIN_UID) return null;
+  if (isAdmin === null) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-100">
+        <p className="text-gray-600">Memeriksa hak akses...</p>
+      </div>
+    );
+  }
+
+  if (!isAdmin) return null;
 
   return (
     <>
