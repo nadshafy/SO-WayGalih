@@ -45,9 +45,14 @@ export default function ArchivePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
-
     const fetchData = async () => {
+      // Pindahkan pengecekan 'user' ke dalam fungsi async
+      // Jika tidak ada user, kita tetap harus set loading ke false
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
       try {
         const q = query(
           collection(db, "surat_pengajuan"),
@@ -84,12 +89,15 @@ export default function ArchivePage() {
       } catch (error) {
         console.error("Gagal memuat data:", error);
       } finally {
+        // 'finally' akan selalu berjalan setelah 'try' (jika user ada)
         setLoading(false);
       }
     };
 
+    // Panggil fetchData di dalam useEffect
     fetchData();
-  }, [user]);
+    
+  }, [user]); // Tetap jalankan ulang ketika 'user' berubah
 
   return (
     <>

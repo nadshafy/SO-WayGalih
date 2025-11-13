@@ -1,7 +1,8 @@
-"use client";
+"use client"; // 1. WAJIB ditambahkan karena menggunakan hooks
 
 import { useState, useEffect } from "react";
 import Head from "next/head";
+import { useSearchParams } from "next/navigation"; // 2. Impor useSearchParams
 import Footer from "@/src/components/footer";
 import StatusPageContent from "@/src/components/status/page-content";
 
@@ -14,15 +15,20 @@ import {
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/src/lib/firebase/init";
 
-export default function StatusPage({ searchParams }: { searchParams: any }) {
-  const id = searchParams?.id || "";
+// 3. Hapus searchParams dari props
+export default function StatusPage() {
+  // 4. Gunakan hook untuk mendapatkan searchParams
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id") || ""; // 5. Ambil 'id' dari hook
 
   const [items, setItems] = useState<TimelineItemType[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Convert Firestore Timestamp → tanggal string
   const formatTanggal = (timestamp: any) => {
-    if (!timestamp) return "Belum tersedia";
+    if (!timestamp || typeof timestamp.toDate !== "function") {
+      return "Belum tersedia";
+    }
     const date = timestamp.toDate();
     return (
       date.toLocaleString("id-ID", {
@@ -63,15 +69,22 @@ export default function StatusPage({ searchParams }: { searchParams: any }) {
         setItems(timeline);
       } catch (err) {
         console.error("Error fetching data:", err);
+      } finally {
+        // Pindahkan setLoading(false) ke 'finally' agar selalu tereksekusi
+        setLoading(false);
       }
-
-      setLoading(false);
     }
 
     fetchData();
   }, [id]);
 
-  if (loading) return <div className="p-6">Memuat Status…</div>;
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#f4f6f9]">
+        <div className="p-6 text-center text-slate-500">Memuat Status…</div>
+      </div>
+    );
+  }
 
   return (
     <>
