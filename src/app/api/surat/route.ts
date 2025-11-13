@@ -9,8 +9,8 @@ export async function POST(req: Request) {
     }
 
     const payload = {
-      jenisSurat: body.suratType,
-      ...body.formData,
+    suratType: body.suratType, 
+    formData: body.formData,
     };
 
     const url = APPSCRIPT_URL!;
