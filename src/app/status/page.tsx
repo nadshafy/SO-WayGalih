@@ -1,9 +1,7 @@
-"use client"; // 1. WAJIB ditambahkan karena menggunakan hooks
+"use client";
 
 import { useState, useEffect } from "react";
-import Head from "next/head";
-import { useSearchParams } from "next/navigation"; // 2. Impor useSearchParams
-import Footer from "@/src/components/footer";
+import { useSearchParams } from "next/navigation";
 import StatusPageContent from "@/src/components/status/page-content";
 
 import {
@@ -15,16 +13,15 @@ import {
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/src/lib/firebase/init";
 
-// 3. Hapus searchParams dari props
-export default function StatusPage() {
-  // 4. Gunakan hook untuk mendapatkan searchParams
+// Ini adalah SEMUA KODE LAMA ANDA dari page.tsx,
+// sekarang dipindahkan ke komponen kliennya sendiri.
+export default function StatusPageClient() {
   const searchParams = useSearchParams();
-  const id = searchParams.get("id") || ""; // 5. Ambil 'id' dari hook
+  const id = searchParams.get("id") || "";
 
   const [items, setItems] = useState<TimelineItemType[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Convert Firestore Timestamp → tanggal string
   const formatTanggal = (timestamp: any) => {
     if (!timestamp || typeof timestamp.toDate !== "function") {
       return "Belum tersedia";
@@ -41,7 +38,6 @@ export default function StatusPage() {
     );
   };
 
-  // Fetch Firestore
   useEffect(() => {
     async function fetchData() {
       if (!id) {
@@ -70,7 +66,6 @@ export default function StatusPage() {
       } catch (err) {
         console.error("Error fetching data:", err);
       } finally {
-        // Pindahkan setLoading(false) ke 'finally' agar selalu tereksekusi
         setLoading(false);
       }
     }
@@ -86,19 +81,12 @@ export default function StatusPage() {
     );
   }
 
+  // <Head> dan <Footer> sudah dipindahkan ke page.tsx
   return (
-    <>
-      <Head>
-        <title>Status Pengajuan Surat - Desa Way Galih</title>
-      </Head>
-
-      <StatusPageContent
-        id={id}
-        items={items}
-        descriptions={STATUS_DESCRIPTIONS}
-      />
-
-      <Footer />
-    </>
+    <StatusPageContent
+      id={id}
+      items={items}
+      descriptions={STATUS_DESCRIPTIONS}
+    />
   );
 }
