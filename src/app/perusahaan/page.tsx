@@ -8,47 +8,64 @@ import PerusahaanPageContent from "@/src/components/perusahaan/page-content";
 import AuthGuard from "@/src/components/auth/auth-guard";
 import { db } from "@/src/lib/firebase/init"; 
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { toBase64 } from "@/src/lib/file";
 
 export default function PerusahaanPage() {
   const router = useRouter();
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  event.preventDefault();
 
-    const formData = new FormData(event.currentTarget);
-    const data = Object.fromEntries(formData.entries());
+  const formData = new FormData(event.currentTarget);
+  const dataObj: Record<string, string> = {};
 
-    try {
-      await addDoc(collection(db, "surat_pengajuan"), {
-        ...data,
-        jenisSurat: "domisili",
-        status: "diproses",
-        tanggal_pengajuan: serverTimestamp(),
-      });
+  formData.forEach((value, key) => {
+    if (value instanceof File) return; // ← filter semua file!
+    dataObj[key] = value.toString();
+  });
 
-      const response = await fetch("/script/surat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...data,
-          jenisSurat: "perusahaan",
-        }),
-      });
+  const ktpFile = formData.get("ktp_pendirian") as File | null;
+  const aktaFile = formData.get("akta_pendirian") as File | null;
 
-      if (!response.ok) throw new Error("Gagal menyimpan data");
+  const ktpBase64 = ktpFile ? await toBase64(ktpFile) : null;
+  const aktaBase64 = aktaFile ? await toBase64(aktaFile) : null;
 
-      const result = await response.json();
-      console.log("Response:", result);
-
-      alert("Form berhasil dikirim! Data Anda sedang diproses.");
-      router.push("/status");
-    } catch (error) {
-      console.error("Gagal mengirim data:", error);
-      alert("Terjadi kesalahan saat mengirim data. Silakan coba lagi nanti.");
-    }
+  const payload = {
+    ...dataObj,
+    jenisSurat: "perusahaan",
+    ktpFileName: ktpFile?.name || "",
+    aktaFileName: aktaFile?.name || "",
+    ktpFileData: ktpBase64,
+    aktaFileData: aktaBase64,
   };
+
+  try {
+    await addDoc(collection(db, "surat_pengajuan"), {
+      ...dataObj,
+      jenisSurat: "perusahaan",
+      status: "diproses",
+      tanggal_pengajuan: serverTimestamp(),
+    });
+
+    const response = await fetch("/api/surat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        suratType: "perusahaan",
+        formData: payload,
+      }),
+    });
+
+    if (!response.ok) throw new Error("Gagal menyimpan data ke server.");
+
+    alert("Form berhasil dikirim!");
+    router.push("/status");
+  } catch (error) {
+    console.error(error);
+    alert("Terjadi kesalahan, coba lagi nanti.");
+  }
+};
+
 
   return (
     <>
