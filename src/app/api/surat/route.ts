@@ -16,7 +16,7 @@ export async function POST(req: Request) {
       ...body.formData,
     };
 
-    const res = await fetch(APPSCRIPT_URL, {
+    const res = await fetch(APPSCRIPT_URL!, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
