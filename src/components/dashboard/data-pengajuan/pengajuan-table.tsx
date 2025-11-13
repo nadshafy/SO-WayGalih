@@ -42,13 +42,24 @@ const PengajuanTable = ({
                 ? statusStyles.ditolak
                 : statusStyles.default;
 
+            const timestamp = item.tanggal_pengajuan as any;
+            let formattedDate = "Data tanggal tidak valid";
+
+            if (timestamp && typeof timestamp.toDate === "function") {
+              formattedDate = timestamp.toDate().toLocaleDateString("id-ID", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              });
+            }
+
             return (
               <tr key={item.id} className="text-slate-600">
                 <td className="px-4 py-3 font-semibold text-slate-700">
                   {item.nama ?? item.nama_pendiri}
                 </td>
                 <td className="px-4 py-3">{item.jenisSurat}</td>
-                <td className="px-4 py-3">{item.tanggal_pengajuan}</td>
+                <td className="px-4 py-3">{formattedDate}</td>
                 <td className="px-4 py-3">
                   <span
                     className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${badgeClass}`}
