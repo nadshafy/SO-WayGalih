@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import Footer from "@/src/components/footer";
 import PerusahaanPageContent from "@/src/components/perusahaan/page-content";
 import AuthGuard from "@/src/components/auth/auth-guard";
+import { db } from "@/src/lib/firebase/init"; 
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 export default function PerusahaanPage() {
   const router = useRouter();
@@ -17,6 +19,13 @@ export default function PerusahaanPage() {
     const data = Object.fromEntries(formData.entries());
 
     try {
+      await addDoc(collection(db, "surat_pengajuan"), {
+        ...data,
+        jenisSurat: "domisili",
+        status: "diproses",
+        tanggal_pengajuan: serverTimestamp(),
+      });
+
       const response = await fetch("/script/surat", {
         method: "POST",
         headers: {

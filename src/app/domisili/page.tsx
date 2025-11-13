@@ -8,6 +8,7 @@ import DomisiliPageContent from "@/src/components/domisili/page-content";
 import AuthGuard from "@/src/components/auth/auth-guard";
 import { db } from "@/src/lib/firebase/init"; 
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { toBase64 } from "@/src/lib/file";
 
 export default function DomisiliPage() {
   const router = useRouter();
@@ -30,14 +31,28 @@ export default function DomisiliPage() {
       return;
     }
 
+    const file = formData.get("file") as File | null;
+    const dataObj: Record<string, string> = {};
+    formData.forEach((value, key) => {
+      if (key !== "file") dataObj[key] = value.toString();
+    });
+
+    const base64File = file ? await toBase64(file) : null;
+
+    const payload = {
+      ...dataObj,
+      jenisSurat: "domisili",
+      fileName: file?.name || "",
+      fileData: base64File,
+    };
+
     try {
-      await addDoc(collection(db, "surat_domisili"), {
-        ...data,
+      await addDoc(collection(db, "surat_pengajuan"), {
+        ...dataObj,
         jenisSurat: "domisili",
         status: "diproses",
         tanggal_pengajuan: serverTimestamp(),
       });
-
 
       const response = await fetch("/api/surat", {
         method: "POST",
@@ -46,7 +61,7 @@ export default function DomisiliPage() {
         },
         body: JSON.stringify({
           suratType: "domisili",
-          formData: data,
+          formData: payload,
         }),
       });
 
