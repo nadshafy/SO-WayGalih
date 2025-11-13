@@ -1,7 +1,102 @@
+"use client";
+
+import { useState, useCallback, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Head from "next/head";
+import {
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
+} from "firebase/auth";
+import { auth, googleProvider, db } from "@/src/lib/firebase/init";
+import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import AuthCard from "@/src/components/shared/auth-card";
+import { useAuth } from "@/src/contexts/auth-context";
 
 export default function RegisterPage() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const { user, role, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) return;
+
+    if (role === "admin") {
+      router.replace("/dashboard");
+    } else {
+      router.replace("/halaman-pengguna");
+    }
+  }, [authLoading, role, router, user]);
+
+  useEffect(() => {
+    getRedirectResult(auth).then(async (result) => {
+      if (result && result.user) {
+        const user = result.user;
+        const userRef = doc(db, "users", user.uid);
+        const existing = await getDoc(userRef);
+
+        if (!existing.exists()) {
+          await setDoc(userRef, {
+            uid: user.uid,
+            name: user.displayName,
+            email: user.email,
+            role: "user",
+            createdAt: serverTimestamp(),
+          });
+          console.log("User baru ditambahkan ke Firestore (redirect).");
+        }
+
+        router.push("/halaman-pengguna");
+      }
+    });
+  }, [router]);
+
+  const handleRegister = useCallback(async () => {
+    try {
+      setLoading(true);
+
+      const isSafari =
+        typeof navigator !== "undefined" &&
+        /safari/i.test(navigator.userAgent) &&
+        !/chrome/i.test(navigator.userAgent);
+
+      if (isSafari) {
+        console.log("Safari terdeteksi, menggunakan signInWithRedirect...");
+        await signInWithRedirect(auth, googleProvider);
+        return;
+      }
+
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+
+      console.log("Pendaftaran berhasil. UID:", user.uid);
+
+      const userRef = doc(db, "users", user.uid);
+      const existing = await getDoc(userRef);
+
+      if (!existing.exists()) {
+        await setDoc(userRef, {
+          uid: user.uid,
+          name: user.displayName,
+          email: user.email,
+          role: "user",
+          createdAt: serverTimestamp(),
+        });
+        console.log("User baru ditambahkan ke Firestore (popup).");
+      } else {
+        console.log("User sudah terdaftar di Firestore");
+      }
+
+      router.push("/halaman-pengguna");
+    } catch (error: any) {
+      console.error("Gagal daftar:", error.message);
+      alert("Pendaftaran gagal: " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [router]);
+
   return (
     <>
       <Head>
@@ -9,7 +104,11 @@ export default function RegisterPage() {
       </Head>
 
       <div className="flex min-h-screen items-center justify-center bg-[#f4f6f9] px-6">
-        <AuthCard buttonLabel="Daftar dengan Google" />
+        <AuthCard
+          buttonLabel={loading ? "Memproses..." : "Daftar dengan Google"}
+          loading={loading}
+          onButtonClick={handleRegister}
+        />
       </div>
     </>
   );
