@@ -9,11 +9,14 @@ export interface Lampiran {
 export interface Pengajuan {
   id: string;
   nama: string;
-  jenis: string;
-  tanggal: string;
+  nama_pendiri: string;
+  jenisSurat: string;
+  tanggal_pengajuan: string;
   status: string;
   nik: string;
   alamat: string;
+  alamat_lembaga: string;
+  kecamatan: string;
   catatan: string;
   lampiran: Lampiran[];
 }

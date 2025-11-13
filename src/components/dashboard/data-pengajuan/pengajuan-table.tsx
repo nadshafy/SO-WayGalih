@@ -45,10 +45,10 @@ const PengajuanTable = ({
             return (
               <tr key={item.id} className="text-slate-600">
                 <td className="px-4 py-3 font-semibold text-slate-700">
-                  {item.nama}
+                  {item.nama ?? item.nama_pendiri}
                 </td>
-                <td className="px-4 py-3">{item.jenis}</td>
-                <td className="px-4 py-3">{item.tanggal}</td>
+                <td className="px-4 py-3">{item.jenisSurat}</td>
+                <td className="px-4 py-3">{item.tanggal_pengajuan}</td>
                 <td className="px-4 py-3">
                   <span
                     className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${badgeClass}`}

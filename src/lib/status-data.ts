@@ -1,45 +1,38 @@
-export type TimelineStatus = "completed" | "current" | "upcoming" | "rejected";
+import PengajuanDetail from "@/src/components/PengajuanDetail";
+import { getPengajuanById } from "@/src/lib/pengajuan";
 
-export type TimelineItemType = {
-  title: string;
-  timestamp: string;
-  status: TimelineStatus;
-  completedDescription?: string;
-};
+function formatTanggal(tanggal: string): string {
+  return new Date(tanggal).toLocaleString("id-ID", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }) + " WIB";
+}
 
-export const TIMELINE_ITEMS: TimelineItemType[] = [
-  {
-    title: "Surat berhasil diajukan",
-    timestamp: "12 Oktober 2025 - 08:34 WIB",
-    status: "completed",
-    completedDescription:
-      "Sistem telah menerima permohonan surat Anda dan sedang menunggu verifikasi awal.",
-  },
-  {
-    title: "Surat sedang diproses",
-    timestamp: "12 Oktober 2025 - 10:12 WIB",
-    status: "completed",
-    completedDescription:
-      "Sedang dalam proses verifikasi. Kepala Urusan (Kaur) sedang meninjau dan memvalidasi kelengkapan data.",
-  },
-  {
-    title: "Surat disetujui/tidak disetujui",
-    timestamp: "Menunggu proses",
-    status: "current",
-  },
-  {
-    title: "Proses Pengajuan Selesai",
-    timestamp: "Belum tersedia",
-    status: "upcoming",
-    completedDescription:
-      "Selesai dan siap diambil! Surat Anda dapat diambil di kantor desa pada jam kerja.",
-  },
-];
+export default async function Page({ params }: { params: { id: string } }) {
+  const detail = await getPengajuanById(params.id);
 
-export const STATUS_DESCRIPTIONS: Record<TimelineStatus, string> = {
-  completed: "Tahap ini telah selesai dan tervalidasi oleh petugas desa.",
-  current: "Sedang diproses.",
-  upcoming: "",
-  rejected:
-    "Pengajuan ditolak. Silakan hubungi operator desa untuk informasi lebih lanjut.",
-};
+  if (!detail) {
+    return <div className="p-6">Data tidak ditemukan</div>;
+  }
+
+  const statusLabelMap: Record<string, string> = {
+    menunggu: "Menunggu Diproses",
+    ditolak: "Ditolak",
+    selesai: "Selesai",
+  };
+
+  const statusLabel = statusLabelMap[detail.status] ?? "Tidak diketahui";
+
+  // 🔥 injeksi tanggal pengajuan rebased dari Firestore
+  const tanggalPengajuanFormatted = formatTanggal(detail.tanggal_pengajuan);
+
+  return (
+    <PengajuanDetail
+      detail={{ ...detail, tanggal: tanggalPengajuanFormatted }}
+      statusLabel={statusLabel}
+    />
+  );
+}

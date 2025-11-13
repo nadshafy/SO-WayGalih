@@ -45,7 +45,7 @@ const PengajuanDetail = ({ detail, statusLabel }: PengajuanDetailProps) => {
               <div className="flex flex-col items-center gap-1 sm:items-end">
                 {/* badge “Detail Pengajuan” DIHAPUS */}
                 <h1 className="text-center text-lg font-semibold sm:text-2xl sm:text-right">
-                  {detail.jenis}
+                  {detail.jenisSurat}
                 </h1>
               </div>
             </nav>
@@ -60,7 +60,7 @@ const PengajuanDetail = ({ detail, statusLabel }: PengajuanDetailProps) => {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="text-xs uppercase tracking-wide text-slate-400 sm:text-sm">Nama Pemohon</p>
-              <h2 className="text-xl font-semibold text-[#0a3d91] sm:text-2xl">{detail.nama}</h2>
+              <h2 className="text-xl font-semibold text-[#0a3d91] sm:text-2xl">{detail.nama ?? detail.nama_pendiri}</h2>
               <p className="mt-2 text-sm text-slate-500">
                 NIK: <span className="font-semibold">{detail.nik}</span>
               </p>
@@ -77,7 +77,7 @@ const PengajuanDetail = ({ detail, statusLabel }: PengajuanDetailProps) => {
           <div className="mt-8 grid gap-6 lg:grid-cols-2">
             <section className="rounded-2xl border border-slate-100 bg-slate-50/70 p-5">
               <h3 className="text-base font-semibold text-[#0a3d91]">Alamat Domisili</h3>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600">{detail.alamat}</p>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">{detail.alamat ?? detail.alamat_lembaga ?? detail.kecamatan}</p>
             </section>
 
             <section className="rounded-2xl border border-slate-100 bg-slate-50/70 p-5">
@@ -113,7 +113,7 @@ const PengajuanDetail = ({ detail, statusLabel }: PengajuanDetailProps) => {
                 ))}
               </ul>
             ) : (
-              <p className="mt-3 text-sm text-slate-500">Tidak ada lampiran.</p>
+              <p className="mt-3 text-sm text-slate-500">Lampiran ada di spreadsheet.</p>
             )}
           </section>
 
@@ -129,7 +129,7 @@ const PengajuanDetail = ({ detail, statusLabel }: PengajuanDetailProps) => {
               <span className="text-[11px] uppercase tracking-wide text-slate-400 sm:text-xs">
                 Tanggal Pengajuan
               </span>
-              <span className="text-sm font-semibold text-[#0a3d91]">{detail.tanggal}</span>
+              <span className="text-sm font-semibold text-[#0a3d91]">{detail.tanggal_pengajuan}</span>
             </div>
           </div>
         </div>
