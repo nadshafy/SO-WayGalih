@@ -13,8 +13,6 @@ import {
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/src/lib/firebase/init";
 
-// Ini adalah SEMUA KODE LAMA ANDA dari page.tsx,
-// sekarang dipindahkan ke komponen kliennya sendiri.
 export default function StatusPageClient() {
   const searchParams = useSearchParams();
   const id = searchParams.get("id") || "";
@@ -57,7 +55,6 @@ export default function StatusPageClient() {
         }
 
         const data = snap.data();
-
         const tanggal = formatTanggal(data.tanggal_pengajuan);
         const status = data.status ?? "menunggu";
 
@@ -81,7 +78,6 @@ export default function StatusPageClient() {
     );
   }
 
-  // <Head> dan <Footer> sudah dipindahkan ke page.tsx
   return (
     <StatusPageContent
       id={id}
