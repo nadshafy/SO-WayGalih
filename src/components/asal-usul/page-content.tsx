@@ -7,6 +7,9 @@ import Image from "next/image";
 const inputBase =
   "w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 transition focus:border-[#0a3d91] focus:outline-none focus:ring-2 focus:ring-[#0a3d91]/40";
 const inputClasses = inputBase;
+const fileInputClasses =
+  "w-full cursor-pointer rounded-xl border border-dashed border-[#0a3d91]/40 bg-[#e2e9ff]/40 px-4 py-3 text-sm text-slate-700 file:mr-4 file:rounded-lg file:border-0 file:bg-[#1a3491] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:border-[#0a3d91]";
+
 
 type AsalUsulPageContentProps = {
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
@@ -469,7 +472,60 @@ const AsalUsulPageContent = ({ onSubmit }: AsalUsulPageContentProps) => {
                 </div>
               </section>
 
-              <hr className="border-slate-200" />
+              <section>
+                <h2 className="mb-4 text-base font-semibold uppercase tracking-wide text-[#0a3d91]">
+                  IV. Lampiran Persyaratan
+                </h2>
+                  <div className="space-y-4">
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-semibold text-[#0a3d91]" htmlFor="ktp">
+                        Unggah KTP <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="file"
+                        id="ktp"
+                        name="ktp"
+                        accept=".jpg,.jpeg,.png,.pdf"
+                        required
+                        className={fileInputClasses}
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-semibold text-[#0a3d91]" htmlFor="kk">
+                        Unggah Kartu Keluarga (KK) <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="file"
+                        id="kk"
+                        name="kk"
+                        accept=".jpg,.jpeg,.png,.pdf"
+                        required
+                        className={fileInputClasses}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                          <label className="text-sm font-semibold text-[#0a3d91]" htmlFor="ponsel">
+                            Nomor Ponsel <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="tel"
+                            id="ponsel"
+                            name="ponsel"
+                            placeholder="Contoh: 08123456789"
+                            inputMode="numeric"
+                            autoComplete="tel"
+                            required
+                            pattern="08[0-9]{9,11}"
+                            title="Nomor ponsel harus diawali 08 dan terdiri dari 11-13 angka"
+                            className={inputClasses}
+                          />
+                          <p className="text-xs text-slate-500">
+                            Harus aktif untuk proses verifikasi petugas.
+                          </p>
+                        </div>
+                      </div>
+                  </section>
 
               {/* ACTIONS */}
               <div className="mt-2 flex flex-col-reverse gap-4 sm:flex-row sm:justify-end">

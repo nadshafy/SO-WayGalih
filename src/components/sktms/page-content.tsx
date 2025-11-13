@@ -390,7 +390,7 @@ const SKTMSPageContent = ({ onSubmit }: SKTMSPageContentProps) => {
                   <div className="space-y-1.5">
                     <label className="text-sm font-semibold text-[#0a3d91]" htmlFor="file_gaji">
                       Unggah Surat Keterangan Belum Bekerja / Penghasilan{" "}
-                      <span className="text-red-500">*</span>
+                      <span className="text-red-500"></span>
                     </label>
                     <input
                       type="file"
