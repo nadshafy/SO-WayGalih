@@ -1,38 +1,74 @@
-import PengajuanDetail from "@/src/components/PengajuanDetail";
-import { getPengajuanById } from "@/src/lib/pengajuan";
+export type TimelineStatus = "completed" | "current" | "upcoming" | "rejected";
 
-function formatTanggal(tanggal: string): string {
-  return new Date(tanggal).toLocaleString("id-ID", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }) + " WIB";
+export interface TimelineItemType {
+  title: string;
+  timestamp: string;
+  status: TimelineStatus;
+  completedDescription?: string;
 }
 
-export default async function Page({ params }: { params: { id: string } }) {
-  const detail = await getPengajuanById(params.id);
+export function generateTimeline(
+  pengajuanStatus: string,
+  tanggalPengajuan: string
+): TimelineItemType[] {
+  const tgl = tanggalPengajuan || "Belum tersedia";
 
-  if (!detail) {
-    return <div className="p-6">Data tidak ditemukan</div>;
-  }
-
-  const statusLabelMap: Record<string, string> = {
-    menunggu: "Menunggu Diproses",
-    ditolak: "Ditolak",
-    selesai: "Selesai",
+  const step1: TimelineItemType = {
+    title: "Surat berhasil diajukan",
+    timestamp: tgl,
+    status: "completed",
+    completedDescription:
+      "Sistem telah menerima permohonan surat Anda dan sedang menunggu verifikasi awal.",
   };
 
-  const statusLabel = statusLabelMap[detail.status] ?? "Tidak diketahui";
+  const step2: TimelineItemType = {
+    title: "Surat sedang diproses",
+    timestamp: tgl,
+    status: pengajuanStatus === "menunggu" ? "current" : "completed",
+    completedDescription:
+      "Permohonan sedang atau telah diverifikasi oleh petugas.",
+  };
 
-  // 🔥 injeksi tanggal pengajuan rebased dari Firestore
-  const tanggalPengajuanFormatted = formatTanggal(detail.tanggal_pengajuan);
+  let step3: TimelineItemType;
 
-  return (
-    <PengajuanDetail
-      detail={{ ...detail, tanggal: tanggalPengajuanFormatted }}
-      statusLabel={statusLabel}
-    />
-  );
+  if (pengajuanStatus === "selesai") {
+    step3 = {
+      title: "Surat disetujui",
+      timestamp: tgl,
+      status: "completed",
+      completedDescription: "Surat telah disetujui oleh petugas desa.",
+    };
+  } else if (pengajuanStatus === "ditolak") {
+    step3 = {
+      title: "Surat ditolak",
+      timestamp: tgl,
+      status: "rejected",
+      completedDescription:
+        "Permohonan ditolak. Silakan hubungi operator desa untuk informasi lebih lanjut.",
+    };
+  } else {
+    step3 = {
+      title: "Surat disetujui/tidak disetujui",
+      timestamp: "Menunggu proses",
+      status: "current",
+    };
+  }
+
+  const step4: TimelineItemType = {
+    title: "Proses Pengajuan Selesai",
+    timestamp: pengajuanStatus === "selesai" ? tgl : "Belum tersedia",
+    status: pengajuanStatus === "selesai" ? "completed" : "upcoming",
+    completedDescription:
+      "Surat siap diambil di kantor desa pada jam kerja.",
+  };
+
+  return [step1, step2, step3, step4];
 }
+
+export const STATUS_DESCRIPTIONS: Record<TimelineStatus, string> = {
+  completed: "Tahap ini telah selesai dan tervalidasi oleh petugas desa.",
+  current: "Sedang diproses.",
+  upcoming: "Tahap ini menunggu proses sebelumnya.",
+  rejected:
+    "Pengajuan ditolak. Silakan hubungi operator desa untuk informasi lebih lanjut.",
+};
