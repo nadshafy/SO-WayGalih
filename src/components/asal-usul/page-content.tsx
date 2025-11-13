@@ -478,20 +478,6 @@ const AsalUsulPageContent = ({ onSubmit }: AsalUsulPageContentProps) => {
                 </h2>
                   <div className="space-y-4">
                     <div className="space-y-1.5">
-                      <label className="text-sm font-semibold text-[#0a3d91]" htmlFor="ktp">
-                        Unggah KTP <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="file"
-                        id="ktp"
-                        name="ktp"
-                        accept=".jpg,.jpeg,.png,.pdf"
-                        required
-                        className={fileInputClasses}
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
                       <label className="text-sm font-semibold text-[#0a3d91]" htmlFor="kk">
                         Unggah Kartu Keluarga (KK) <span className="text-red-500">*</span>
                       </label>
