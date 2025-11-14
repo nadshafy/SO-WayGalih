@@ -25,18 +25,20 @@ export default function AsalUsulPage() {
       }
     });
 
-    const file = formData.get("file") as File | null;
+    const fileFields = ["pengantar_rt"];
 
-    if (file && file.name) {
-      const base64File = await toBase64(file);
-      const cleanBase64 = base64File.includes(",")
-        ? base64File.split(",")[1]
-        : base64File;
+    for (const field of fileFields) {
+      const file = formData.get(field) as File | null;
 
-      const fieldName = "pengantar_rt";
+      if (file && file.name) {
+        const base64 = await toBase64(file);
+        const cleanBase64 = base64.includes(",")
+          ? base64.split(",")[1]
+          : base64;
 
-      dataObj[`${fieldName}FileName`] = file.name;
-      dataObj[`${fieldName}FileData`] = cleanBase64;
+        dataObj[`${field}FileName`] = file.name;
+        dataObj[`${field}FileData`] = cleanBase64;
+      }
     }
 
     try {
@@ -57,14 +59,12 @@ export default function AsalUsulPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Gagal mengirim data ke server (API).");
+        throw new Error("Gagal mengirim data ke server.");
       }
 
-      const result = await response.json();
-      console.log("Response dari server:", result);
+      await response.json();
 
       alert("Form berhasil dikirim! Data Anda sedang diproses.");
-      // router.push("/status");
       router.push("/halaman-pengguna");
     } catch (err) {
       console.error("Gagal mengirim data:", err);

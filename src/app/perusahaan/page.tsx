@@ -20,30 +20,30 @@ export default function PerusahaanPage() {
     const dataObj: Record<string, string> = {};
 
     formData.forEach((value, key) => {
-      if (value instanceof File) return;
-      dataObj[key] = value.toString();
+      if (!(value instanceof File)) {
+        dataObj[key] = value.toString();
+      }
     });
 
-    const ktpFile = formData.get("ktp_pendirian") as File | null;
-    const aktaFile = formData.get("akta_pendirian") as File | null;
+    const fileFields = [
+      { field: "ktp_pendirian", alias: "ktp_pendiri" },
+      { field: "akta_pendirian", alias: "akta_lembaga" }
+    ];
 
-    if (ktpFile && ktpFile.name) {
-      const base64 = await toBase64(ktpFile);
-      const cleanBase64 = base64.includes(",") ? base64.split(",")[1] : base64;
-      
-      dataObj["ktp_pendiriFileName"] = ktpFile.name;
-      dataObj["ktp_pendiriFileData"] = cleanBase64;
+    for (const { field, alias } of fileFields) {
+      const file = formData.get(field) as File | null;
+
+      if (file && file.name) {
+        const base64 = await toBase64(file);
+        const cleanBase64 = base64.includes(",")
+          ? base64.split(",")[1]
+          : base64;
+
+        dataObj[`${alias}FileName`] = file.name;
+        dataObj[`${alias}FileData`] = cleanBase64;
+      }
     }
 
-    if (aktaFile && aktaFile.name) {
-      const base64 = await toBase64(aktaFile);
-      const cleanBase64 = base64.includes(",") ? base64.split(",")[1] : base64;
-      
-      dataObj["akta_lembagaFileName"] = aktaFile.name;
-      dataObj["akta_lembagaFileData"] = cleanBase64;
-    }
-    
-    
     try {
       await addDoc(collection(db, "surat_pengajuan"), {
         ...dataObj,
@@ -57,14 +57,13 @@ export default function PerusahaanPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           suratType: "perusahaan",
-          formData: dataObj, 
+          formData: dataObj,
         }),
       });
 
-      if (!response.ok) throw new Error("Gagal menyimpan data ke server.");
+      if (!response.ok) throw new Error();
 
       alert("Form berhasil dikirim!");
-      // router.push("/status");
       router.push("/halaman-pengguna");
     } catch (error) {
       console.error(error);
