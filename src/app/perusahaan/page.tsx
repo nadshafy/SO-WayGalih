@@ -64,7 +64,8 @@ export default function PerusahaanPage() {
       if (!response.ok) throw new Error("Gagal menyimpan data ke server.");
 
       alert("Form berhasil dikirim!");
-      router.push("/status");
+      // router.push("/status");
+      router.push("/halaman-pengguna");
     } catch (error) {
       console.error(error);
       alert("Terjadi kesalahan, coba lagi nanti.");

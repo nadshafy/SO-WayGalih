@@ -64,7 +64,8 @@ export default function AsalUsulPage() {
       console.log("Response dari server:", result);
 
       alert("Form berhasil dikirim! Data Anda sedang diproses.");
-      router.push("/status");
+      // router.push("/status");
+      router.push("/halaman-pengguna");
     } catch (err) {
       console.error("Gagal mengirim data:", err);
       alert("Terjadi kesalahan saat mengirim data. Silakan coba lagi nanti.");

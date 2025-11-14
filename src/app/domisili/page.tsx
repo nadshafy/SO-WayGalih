@@ -91,7 +91,8 @@ export default function DomisiliPage() {
       console.log("Response dari Apps Script:", result);
 
       alert("Form berhasil dikirim! Data Anda sedang diproses.");
-      router.push("/status");
+      // router.push("/status");
+      router.push("/halaman-pengguna");
 
     } catch (error) {
       console.error("Gagal mengirim data:", error);

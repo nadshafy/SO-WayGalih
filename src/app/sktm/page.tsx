@@ -52,7 +52,8 @@ export default function SKTMPage() {
       console.log(result);
 
       alert("Form berhasil dikirim! Data Anda sedang diproses.");
-      router.push("/status");
+      // router.push("/status");
+      router.push("/halaman-pengguna");
     } catch (error) {
       console.error(error);
       alert("Terjadi kesalahan saat mengirim data. Silakan coba lagi nanti.");
