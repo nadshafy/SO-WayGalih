@@ -7,7 +7,6 @@ import {
   signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
-  onAuthStateChanged,
 } from "firebase/auth";
 import { auth, googleProvider, db } from "@/src/lib/firebase/init";
 import { doc, getDoc } from "firebase/firestore";
@@ -22,39 +21,48 @@ export default function LoginPage() {
   useEffect(() => {
     if (authLoading) return;
     if (!user) return;
-    if (role === "admin") router.replace("/dashboard");
-    else router.replace("/halaman-pengguna");
+
+    if (role === "admin") {
+      router.replace("/dashboard");
+    } else {
+      router.replace("/halaman-pengguna");
+    }
   }, [authLoading, role, router, user]);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (user) => {
-      if (!user) return;
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      if (userDoc.exists()) {
-        const role = userDoc.data().role;
-        if (role === "admin") router.replace("/dashboard");
-        else router.replace("/halaman-pengguna");
-      } else {
-        router.replace("/register");
+    getRedirectResult(auth).then(async (result) => {
+      if (result && result.user) {
+        const user = result.user;
+        console.log("Login (redirect) berhasil. UID:", user.uid);
+
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+          const role = userDoc.data().role;
+          console.log("Role:", role);
+          if (role === "admin") {
+            router.push("/dashboard");
+          } else {
+            router.push("/halaman-pengguna");
+          }
+        } else {
+          alert("Akun belum terdaftar. Silakan daftar terlebih dahulu.");
+          router.push("/register");
+        }
       }
     });
-
-    getRedirectResult(auth);
-    return () => unsub();
   }, [router]);
 
   const handleLogin = useCallback(async () => {
     try {
       setLoading(true);
 
-      const ua = navigator.userAgent;
-      const isIOS = /iPad|iPhone|iPod/i.test(ua);
-      const isWebkit = /WebKit/i.test(ua);
-      const isChromeIOS = /CriOS/i.test(ua);
-      const isFirefoxIOS = /FxiOS/i.test(ua);
-      const isIOSOrSafari = isIOS || (isWebkit && !isChromeIOS && !isFirefoxIOS);
+      const isSafari =
+        typeof navigator !== "undefined" &&
+        /safari/i.test(navigator.userAgent) &&
+        !/chrome/i.test(navigator.userAgent);
 
-      if (isIOSOrSafari) {
+      if (isSafari) {
+        console.log("Safari terdeteksi, menggunakan signInWithRedirect...");
         await signInWithRedirect(auth, googleProvider);
         return;
       }
@@ -62,15 +70,24 @@ export default function LoginPage() {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
 
+      console.log("Login berhasil. UID:", user.uid);
+
       const userDoc = await getDoc(doc(db, "users", user.uid));
       if (userDoc.exists()) {
         const role = userDoc.data().role;
-        if (role === "admin") router.push("/dashboard");
-        else router.push("/halaman-pengguna");
+        console.log("Role:", role);
+
+        if (role === "admin") {
+          router.push("/dashboard");
+        } else {
+          router.push("/halaman-pengguna");
+        }
       } else {
+        alert("Akun belum terdaftar. Silakan daftar terlebih dahulu.");
         router.push("/register");
       }
     } catch (error: any) {
+      console.error("Gagal login:", error.message);
       alert("Login gagal: " + error.message);
     } finally {
       setLoading(false);

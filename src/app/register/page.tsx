@@ -7,7 +7,6 @@ import {
   signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
-  onAuthStateChanged,
 } from "firebase/auth";
 import { auth, googleProvider, db } from "@/src/lib/firebase/init";
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
@@ -22,67 +21,76 @@ export default function RegisterPage() {
   useEffect(() => {
     if (authLoading) return;
     if (!user) return;
-    if (role === "admin") router.replace("/dashboard");
-    else router.replace("/halaman-pengguna");
+
+    if (role === "admin") {
+      router.replace("/dashboard");
+    } else {
+      router.replace("/halaman-pengguna");
+    }
   }, [authLoading, role, router, user]);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (currentUser) => {
-      if (!currentUser) return;
-      const userRef = doc(db, "users", currentUser.uid);
-      const existing = await getDoc(userRef);
+    getRedirectResult(auth).then(async (result) => {
+      if (result && result.user) {
+        const user = result.user;
+        const userRef = doc(db, "users", user.uid);
+        const existing = await getDoc(userRef);
 
-      if (!existing.exists()) {
-        await setDoc(userRef, {
-          uid: currentUser.uid,
-          name: currentUser.displayName,
-          email: currentUser.email,
-          role: "user",
-          createdAt: serverTimestamp(),
-        });
+        if (!existing.exists()) {
+          await setDoc(userRef, {
+            uid: user.uid,
+            name: user.displayName,
+            email: user.email,
+            role: "user",
+            createdAt: serverTimestamp(),
+          });
+          console.log("User baru ditambahkan ke Firestore (redirect).");
+        }
+
+        router.push("/halaman-pengguna");
       }
-
-      router.replace("/halaman-pengguna");
     });
-
-    getRedirectResult(auth);
-    return () => unsub();
   }, [router]);
 
   const handleRegister = useCallback(async () => {
     try {
       setLoading(true);
 
-      const ua = navigator.userAgent;
-      const isIOS = /iPad|iPhone|iPod/i.test(ua);
-      const isWebkit = /WebKit/i.test(ua);
-      const isChromeIOS = /CriOS/i.test(ua);
-      const isFirefoxIOS = /FxiOS/i.test(ua);
-      const isIOSOrSafari = isIOS || (isWebkit && !isChromeIOS && !isFirefoxIOS);
+      const isSafari =
+        typeof navigator !== "undefined" &&
+        /safari/i.test(navigator.userAgent) &&
+        !/chrome/i.test(navigator.userAgent);
 
-      if (isIOSOrSafari) {
+      if (isSafari) {
+        console.log("Safari terdeteksi, menggunakan signInWithRedirect...");
         await signInWithRedirect(auth, googleProvider);
         return;
       }
 
       const result = await signInWithPopup(auth, googleProvider);
-      const newUser = result.user;
+      const user = result.user;
 
-      const userRef = doc(db, "users", newUser.uid);
+      console.log("Pendaftaran berhasil. UID:", user.uid);
+
+      const userRef = doc(db, "users", user.uid);
       const existing = await getDoc(userRef);
 
       if (!existing.exists()) {
         await setDoc(userRef, {
-          uid: newUser.uid,
-          name: newUser.displayName,
-          email: newUser.email,
+          uid: user.uid,
+          name: user.displayName,
+          email: user.email,
           role: "user",
           createdAt: serverTimestamp(),
         });
+        console.log("User baru ditambahkan ke Firestore (popup).");
+      } else {
+        console.log("User sudah terdaftar di Firestore");
       }
 
       router.push("/halaman-pengguna");
     } catch (error: any) {
+      console.error("Gagal daftar:", error.message);
       alert("Pendaftaran gagal: " + error.message);
     } finally {
       setLoading(false);
