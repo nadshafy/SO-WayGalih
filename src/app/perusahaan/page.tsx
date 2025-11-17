@@ -9,7 +9,7 @@ import AuthGuard from "@/src/components/auth/auth-guard";
 import { db } from "@/src/lib/firebase/init";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { toBase64 } from "@/src/lib/file";
-import { useAuth } from "@/src/components/auth/useAuth";
+import { useAuth } from "@/src/contexts/auth-context";
 
 export default function PerusahaanPage() {
   const router = useRouter();
