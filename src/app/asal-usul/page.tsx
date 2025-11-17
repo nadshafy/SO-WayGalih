@@ -17,29 +17,28 @@ export default function AsalUsulPage() {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
-    const dataObj: Record<string, string> = {};
 
+    const dataObj: Record<string, string> = {};
     formData.forEach((value, key) => {
       if (!(value instanceof File)) {
         dataObj[key] = value.toString();
       }
     });
 
-    const fileFields = ["pengantar_rt"];
+    const fileFields = ["kk"];
 
     for (const field of fileFields) {
       const file = formData.get(field) as File | null;
 
       if (file && file.name) {
         const base64 = await toBase64(file);
-        const cleanBase64 = base64.includes(",")
-          ? base64.split(",")[1]
-          : base64;
+        const cleanBase64 = base64.includes(",") ? base64.split(",")[1] : base64;
 
-        dataObj[`${field}FileName`] = file.name;
         dataObj[`${field}FileData`] = cleanBase64;
       }
     }
+
+    dataObj["jenisSurat"] = "asal-usul";
 
     try {
       await addDoc(collection(db, "surat_pengajuan"), {
@@ -59,15 +58,16 @@ export default function AsalUsulPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Gagal mengirim data ke server.");
+        throw new Error("Gagal mengirim data ke API backend.");
       }
 
       await response.json();
 
       alert("Form berhasil dikirim! Data Anda sedang diproses.");
       router.push("/halaman-pengguna");
-    } catch (err) {
-      console.error("Gagal mengirim data:", err);
+
+    } catch (error) {
+      console.error("Gagal mengirim data:", error);
       alert("Terjadi kesalahan saat mengirim data. Silakan coba lagi nanti.");
     }
   };

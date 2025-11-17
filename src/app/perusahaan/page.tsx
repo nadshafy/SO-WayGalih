@@ -17,32 +17,28 @@ export default function PerusahaanPage() {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
-    const dataObj: Record<string, string> = {};
 
+    const dataObj: Record<string, string> = {};
     formData.forEach((value, key) => {
       if (!(value instanceof File)) {
         dataObj[key] = value.toString();
       }
     });
 
-    const fileFields = [
-      { field: "ktp_pendirian", alias: "ktp_pendiri" },
-      { field: "akta_pendirian", alias: "akta_lembaga" }
-    ];
+    const fileFields = ["ktp_pendiri", "akta_lembaga"];
 
-    for (const { field, alias } of fileFields) {
+    for (const field of fileFields) {
       const file = formData.get(field) as File | null;
 
       if (file && file.name) {
         const base64 = await toBase64(file);
-        const cleanBase64 = base64.includes(",")
-          ? base64.split(",")[1]
-          : base64;
+        const cleanBase64 = base64.includes(",") ? base64.split(",")[1] : base64;
 
-        dataObj[`${alias}FileName`] = file.name;
-        dataObj[`${alias}FileData`] = cleanBase64;
+        dataObj[`${field}FileData`] = cleanBase64;
       }
     }
+
+    dataObj["jenisSurat"] = "perusahaan";
 
     try {
       await addDoc(collection(db, "surat_pengajuan"), {
@@ -61,13 +57,15 @@ export default function PerusahaanPage() {
         }),
       });
 
-      if (!response.ok) throw new Error();
+      if (!response.ok) {
+        throw new Error("Gagal mengirim data ke API");
+      }
 
-      alert("Form berhasil dikirim!");
+      alert("Form berhasil dikirim! Data Anda sedang diproses.");
       router.push("/halaman-pengguna");
     } catch (error) {
-      console.error(error);
-      alert("Terjadi kesalahan, coba lagi nanti.");
+      console.error("Gagal mengirim data:", error);
+      alert("Terjadi kesalahan. Silakan coba lagi nanti.");
     }
   };
 

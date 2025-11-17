@@ -17,15 +17,16 @@ export default function SKTMPage() {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
-    const dataObj: Record<string, string> = {};
 
+    const dataObj: Record<string, string> = {};
     formData.forEach((value, key) => {
       if (!(value instanceof File)) {
         dataObj[key] = value.toString();
       }
     });
 
-    const fileFields = ["file"];
+    const fileFields = ["ktp", "kk", "surat_keterangan"];
+
     for (const field of fileFields) {
       const file = formData.get(field) as File | null;
 
@@ -35,10 +36,11 @@ export default function SKTMPage() {
           ? base64.split(",")[1]
           : base64;
 
-        dataObj[`${field}FileName`] = file.name;
         dataObj[`${field}FileData`] = cleanBase64;
       }
     }
+
+    dataObj["jenisSurat"] = "sktm";
 
     try {
       await addDoc(collection(db, "surat_pengajuan"), {
@@ -57,14 +59,17 @@ export default function SKTMPage() {
         }),
       });
 
-      if (!response.ok) throw new Error();
+      if (!response.ok) {
+        throw new Error("Gagal mengirim data ke API");
+      }
 
       await response.json();
 
       alert("Form berhasil dikirim! Data Anda sedang diproses.");
       router.push("/halaman-pengguna");
+
     } catch (error) {
-      console.error(error);
+      console.error("Gagal mengirim data:", error);
       alert("Terjadi kesalahan saat mengirim data. Silakan coba lagi nanti.");
     }
   };
