@@ -53,7 +53,7 @@ export default function ArchivePage() {
 
       try {
         const q = query(
-          collection(db, "surat_pengajuan"),
+          collection(db, "users", user.uid, "surat_pengajuan"),
           where("uid", "==", user.uid),
           orderBy("tanggal_pengajuan", "desc")
         );

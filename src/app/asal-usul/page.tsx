@@ -52,7 +52,7 @@ export default function AsalUsulPage() {
     dataObj["jenisSurat"] = "asal-usul";
 
     try {
-      await addDoc(collection(db, "surat_pengajuan"), {
+      await addDoc(collection(db, "users", user.uid, "surat_pengajuan"), {
         ...dataObj,
         jenisSurat: "asal-usul",
         status: "diproses",

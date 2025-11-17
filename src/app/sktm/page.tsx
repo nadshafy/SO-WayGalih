@@ -52,7 +52,7 @@ export default function SKTMPage() {
     dataObj["jenisSurat"] = "sktm";
 
     try {
-      await addDoc(collection(db, "surat_pengajuan"), {
+      await addDoc(collection(db, "users", user.uid, "surat_pengajuan"), {
         ...dataObj,
         jenisSurat: "sktm",
         status: "diproses",

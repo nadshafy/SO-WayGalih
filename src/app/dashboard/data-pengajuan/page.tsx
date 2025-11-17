@@ -37,6 +37,14 @@ export default function DataPengajuan() {
   const [statusFilter, setStatusFilter] = useState<PengajuanStatusFilter>("all");
   const [page, setPage] = useState(1);
 
+  if (!user) {
+    if (typeof window !== "undefined") {
+      alert("Anda harus login terlebih dahulu sebelum mengakses halaman ini.");
+      router.push("/login");
+    }
+    return null;
+  }
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -107,7 +115,7 @@ export default function DataPengajuan() {
 
   const updateStatusInFirestore = async (id: string, status: string) => {
     try {
-      const docRef = doc(db, "surat_pengajuan", id);
+      const docRef = doc(db, "users", user.uid, "surat_pengajuan", id);
       await updateDoc(docRef, { status });
       console.log(`Status dokumen ${id} berhasil diupdate ke: ${status}`);
     } catch (error: any) {

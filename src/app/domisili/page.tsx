@@ -68,7 +68,7 @@ export default function DomisiliPage() {
     dataObj["jenisSurat"] = "domisili";
 
     try {
-      await addDoc(collection(db, "surat_pengajuan"), {
+      await addDoc(collection(db, "users", user.uid, "surat_pengajuan"), {
         ...dataObj,
         jenisSurat: "domisili",
         status: "diproses",
