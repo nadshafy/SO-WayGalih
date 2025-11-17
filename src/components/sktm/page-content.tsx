@@ -351,7 +351,7 @@ const SKTMPageContent = ({ onSubmit }: SKTMPageContentProps) => {
 
                   <div className="space-y-1.5">
                     <label className="text-sm font-semibold text-[#0a3d91]" htmlFor="surat_keterangan">
-                      Unggah Surat Keterangan Belum Bekerja / Gaji <span className="text-red-500">*</span>
+                      Unggah Surat Keterangan Belum Bekerja / Gaji <span className="text-red-500"></span>
                     </label>
                     <input
                       type="file"
