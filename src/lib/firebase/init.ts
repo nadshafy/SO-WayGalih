@@ -28,9 +28,14 @@ if (!firebaseConfig.apiKey) {
   throw new Error("Missing Firebase API key in environment variables.");
 }
 
+
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
+
+if (typeof window !== "undefined") {
+  (window as any).auth = auth;
+}
 
 export { app, auth, googleProvider };
 export const db = getFirestore(app);

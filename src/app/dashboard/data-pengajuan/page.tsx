@@ -12,6 +12,7 @@ import {
   RejectModal,
   StatsOverview,
 } from "@/src/components/dashboard/data-pengajuan";
+
 import { useAuth } from "@/src/contexts/auth-context";
 import {
   Pengajuan,
@@ -19,6 +20,7 @@ import {
   PengajuanStatusFilter,
   getPengajuanData,
 } from "@/src/lib/pengajuan";
+
 import { db } from "@/src/lib/firebase/init";
 import { doc, updateDoc } from "firebase/firestore";
 
@@ -34,16 +36,23 @@ export default function DataPengajuan() {
   const [reason, setReason] = useState("");
   const [reasonError, setReasonError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<PengajuanStatusFilter>("all");
+  const [statusFilter, setStatusFilter] =
+    useState<PengajuanStatusFilter>("all");
   const [page, setPage] = useState(1);
+
+  if (!user) {
+    if (typeof window !== "undefined") {
+      alert("Anda harus login terlebih dahulu sebelum mengakses halaman ini.");
+      router.push("/login");
+    }
+    return null;
+  }
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const result = await getPengajuanData();
         setData(result);
-      } catch (error) {
-        console.error("Gagal mengambil data pengajuan:", error);
       } finally {
         setLoading(false);
       }
@@ -60,9 +69,11 @@ export default function DataPengajuan() {
     const selesai = data.filter((item) =>
       item.status.toLowerCase().includes("selesai")
     ).length;
+
     const ditolak = data.filter((item) =>
       item.status.toLowerCase().includes("ditolak")
     ).length;
+
     const menunggu = data.length - selesai - ditolak;
 
     return [
@@ -81,9 +92,7 @@ export default function DataPengajuan() {
         keyword.length === 0 ||
         item.nama.toLowerCase().includes(keyword) ||
         item.jenisSurat.toLowerCase().includes(keyword);
-
       if (!matchesKeyword) return false;
-
       if (statusFilter === "all") return true;
       if (statusFilter === "selesai") return status.includes("selesai");
       if (statusFilter === "ditolak") return status.includes("ditolak");
@@ -105,35 +114,37 @@ export default function DataPengajuan() {
     );
   };
 
-  const updateStatusInFirestore = async (id: string, status: string) => {
+  const updateStatusInFirestore = async (item: Pengajuan, status: string) => {
     try {
-      const docRef = doc(db, "surat_pengajuan", id);
+      const docRef = doc(
+        db,
+        "users",
+        item.userId,
+        "surat_pengajuan",
+        item.id
+      );
       await updateDoc(docRef, { status });
-      console.log(`Status dokumen ${id} berhasil diupdate ke: ${status}`);
     } catch (error: any) {
-      console.error("Gagal update status di Firestore:", error.code, error.message);
-      alert("Terjadi kesalahan saat memperbarui status di Firestore! Pastikan akun Anda adalah admin.");
+      alert("Gagal update status! Pastikan akun Anda admin.");
     }
   };
 
   const handleApprove = async (item: Pengajuan) => {
     const newStatus = "Selesai";
     setStatus(item.id, newStatus);
-    await updateStatusInFirestore(item.id, newStatus);
+    await updateStatusInFirestore(item, newStatus);
   };
 
   const handleRejectSubmit = async () => {
     if (!reason.trim()) {
-      setReasonError("Harap tuliskan alasan penolakan terlebih dahulu.");
+      setReasonError("Harap tuliskan alasan penolakan.");
       return;
     }
-
     if (selectedItem) {
       const newStatus = `Ditolak - ${reason.trim()}`;
       setStatus(selectedItem.id, newStatus);
-      await updateStatusInFirestore(selectedItem.id, newStatus);
+      await updateStatusInFirestore(selectedItem, newStatus);
     }
-
     handleRejectModalClose();
   };
 
@@ -198,13 +209,14 @@ export default function DataPengajuan() {
                 Kelola verifikasi pengajuan dan tindak lanjuti permohonan warga
               </p>
             </div>
+
             <a
-              href="https://docs.google.com/spreadsheets/d/1DvJr-7kXkqcajrJ4YejBgTLTRQNcx4x9kvcwYHl45Hs/edit?gid=0#gid=0"
+              href="https://docs.google.com/spreadsheets/d/1DvJr-7kXkqcajrJ4YejBgTLTRQNcx4x9kvcwYHl45Hs/"
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center justify-center rounded-xl bg-[#0a3d91] px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-[#082f74] hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0a3d91]/50"
+              className="inline-flex items-center justify-center rounded-xl bg-[#0a3d91] px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-[#082f74] hover:shadow-lg"
             >
-              Buka Pengajuan Surat dengan Spreadsheet
+              Buka Spreadsheet
             </a>
           </div>
 
@@ -217,7 +229,7 @@ export default function DataPengajuan() {
                   Daftar Pengajuan Masuk
                 </h2>
                 <p className="text-sm text-slate-500">
-                  Gunakan tombol aksi untuk menyetujui atau menolak pengajuan
+                  Gunakan tombol aksi untuk verifikasi pengajuan
                 </p>
               </div>
 

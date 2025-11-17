@@ -8,6 +8,7 @@ export interface Lampiran {
 
 export interface Pengajuan {
   id: string;
+  userId: string;
   nama: string;
   nama_pendiri: string;
   jenisSurat: string;

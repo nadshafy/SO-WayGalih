@@ -9,12 +9,21 @@ import AuthGuard from "@/src/components/auth/auth-guard";
 import { db } from "@/src/lib/firebase/init";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { toBase64 } from "@/src/lib/file";
+import { useAuth } from "@/src/contexts/auth-context";
+
 
 export default function SKTMSPage() {
   const router = useRouter();
+  const { user } = useAuth();
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (!user) {
+      alert("Anda harus login terlebih dahulu sebelum mengajukan surat.");
+      router.push("/login");
+      return;
+    }
 
     const formData = new FormData(event.currentTarget);
     const dataObj: Record<string, string> = {};
@@ -33,17 +42,18 @@ export default function SKTMSPage() {
         const base64 = await toBase64(file);
         const cleanBase64 = base64.includes(",") ? base64.split(",")[1] : base64;
 
-        dataObj[`${field}FileName`] = file.name;
         dataObj[`${field}FileData`] = cleanBase64;
+        dataObj[`${field}FileName`] = file.name;
       }
     }
 
     try {
-      await addDoc(collection(db, "surat_pengajuan"), {
+      await addDoc(collection(db, "users", user.uid, "surat_pengajuan"), {
         ...dataObj,
         jenisSurat: "sktms",
         status: "diproses",
         tanggal_pengajuan: serverTimestamp(),
+        uid: user.uid,
       });
 
       const response = await fetch("/api/surat", {
@@ -52,6 +62,7 @@ export default function SKTMSPage() {
         body: JSON.stringify({
           suratType: "sktms",
           formData: dataObj,
+          uid: user.uid,
         }),
       });
 
