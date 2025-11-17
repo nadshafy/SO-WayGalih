@@ -12,6 +12,7 @@ import {
   RejectModal,
   StatsOverview,
 } from "@/src/components/dashboard/data-pengajuan";
+
 import { useAuth } from "@/src/contexts/auth-context";
 import {
   Pengajuan,
@@ -19,6 +20,7 @@ import {
   PengajuanStatusFilter,
   getPengajuanData,
 } from "@/src/lib/pengajuan";
+
 import { db } from "@/src/lib/firebase/init";
 import { doc, updateDoc } from "firebase/firestore";
 
@@ -68,9 +70,11 @@ export default function DataPengajuan() {
     const selesai = data.filter((item) =>
       item.status.toLowerCase().includes("selesai")
     ).length;
+
     const ditolak = data.filter((item) =>
       item.status.toLowerCase().includes("ditolak")
     ).length;
+
     const menunggu = data.length - selesai - ditolak;
 
     return [
@@ -83,6 +87,7 @@ export default function DataPengajuan() {
 
   const filteredData = useMemo(() => {
     const keyword = searchTerm.trim().toLowerCase();
+
     return data.filter((item) => {
       const status = item.status.toLowerCase();
       const matchesKeyword =
@@ -95,6 +100,7 @@ export default function DataPengajuan() {
       if (statusFilter === "all") return true;
       if (statusFilter === "selesai") return status.includes("selesai");
       if (statusFilter === "ditolak") return status.includes("ditolak");
+
       return !status.includes("selesai") && !status.includes("ditolak");
     });
   }, [data, searchTerm, statusFilter]);
@@ -113,33 +119,45 @@ export default function DataPengajuan() {
     );
   };
 
-  const updateStatusInFirestore = async (id: string, status: string) => {
+  const updateStatusInFirestore = async (
+    item: Pengajuan,
+    status: string
+  ) => {
     try {
-      const docRef = doc(db, "users", user.uid, "surat_pengajuan", id);
+      const docRef = doc(
+        db,
+        "users",
+        item.id,           
+        "surat_pengajuan",
+        item.id
+      );
+
       await updateDoc(docRef, { status });
-      console.log(`Status dokumen ${id} berhasil diupdate ke: ${status}`);
+      console.log(`Status ${item.id} berhasil diupdate: ${status}`);
+
     } catch (error: any) {
-      console.error("Gagal update status di Firestore:", error.code, error.message);
-      alert("Terjadi kesalahan saat memperbarui status di Firestore! Pastikan akun Anda adalah admin.");
+      console.error("Gagal update status:", error.code, error.message);
+      alert("Gagal update status! Pastikan akun Anda admin.");
     }
   };
 
   const handleApprove = async (item: Pengajuan) => {
     const newStatus = "Selesai";
     setStatus(item.id, newStatus);
-    await updateStatusInFirestore(item.id, newStatus);
+    await updateStatusInFirestore(item, newStatus);
   };
 
   const handleRejectSubmit = async () => {
     if (!reason.trim()) {
-      setReasonError("Harap tuliskan alasan penolakan terlebih dahulu.");
+      setReasonError("Harap tuliskan alasan penolakan.");
       return;
     }
 
     if (selectedItem) {
       const newStatus = `Ditolak - ${reason.trim()}`;
+
       setStatus(selectedItem.id, newStatus);
-      await updateStatusInFirestore(selectedItem.id, newStatus);
+      await updateStatusInFirestore(selectedItem, newStatus);
     }
 
     handleRejectModalClose();
@@ -197,6 +215,7 @@ export default function DataPengajuan() {
         />
 
         <main className="mx-auto max-w-6xl px-6 py-10">
+          {/* HEADER */}
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h1 className="text-2xl font-semibold text-[#1a3491] sm:text-3xl">
@@ -206,11 +225,12 @@ export default function DataPengajuan() {
                 Kelola verifikasi pengajuan dan tindak lanjuti permohonan warga
               </p>
             </div>
+
             <a
               href="https://docs.google.com/spreadsheets/d/1DvJr-7kXkqcajrJ4YejBgTLTRQNcx4x9kvcwYHl45Hs/edit?gid=0#gid=0"
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center justify-center rounded-xl bg-[#0a3d91] px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-[#082f74] hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0a3d91]/50"
+              className="inline-flex items-center justify-center rounded-xl bg-[#0a3d91] px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-[#082f74] hover:shadow-lg"
             >
               Buka Pengajuan Surat dengan Spreadsheet
             </a>
@@ -218,6 +238,7 @@ export default function DataPengajuan() {
 
           <StatsOverview items={stats} />
 
+          {/* TABLE */}
           <section className="mt-8 rounded-3xl border border-slate-100 bg-white/95 p-6 shadow-xl">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>

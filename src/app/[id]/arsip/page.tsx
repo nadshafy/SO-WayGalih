@@ -3,7 +3,7 @@
 import Head from "next/head";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "@/src/lib/firebase/init";
 import Footer from "@/src/components/footer";
 import AuthGuard from "@/src/components/auth/auth-guard";
@@ -54,45 +54,44 @@ export default function ArchivePage() {
       try {
         const q = query(
           collection(db, "users", user.uid, "surat_pengajuan"),
-          where("uid", "==", user.uid),
           orderBy("tanggal_pengajuan", "desc")
         );
         const querySnapshot = await getDocs(q);
-        
-        const data: ArchiveItem[] = querySnapshot.docs.map((doc) => {
-          const docData = doc.data();
-          
-          const timestamp = docData.tanggal_pengajuan;
-          let formattedDate = "Data tanggal tidak valid";
 
-          if (timestamp && typeof timestamp.toDate === 'function') {
-            formattedDate = timestamp.toDate().toLocaleDateString('id-ID', {
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric'
-            });
+        const data: ArchiveItem[] = querySnapshot.docs.map((doc) => {
+          const d = doc.data();
+
+          let formattedDate = "Tanggal tidak valid";
+          if (d.tanggal_pengajuan?.toDate) {
+            formattedDate = d.tanggal_pengajuan.toDate().toLocaleDateString(
+              "id-ID",
+              {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              }
+            );
           }
 
           return {
             id: doc.id,
-            jenisSurat: docData.jenisSurat || "Tidak ada jenis",
-            jumlahPengajuan: docData.jumlahPengajuan || 0,
-            status: docData.status || "diproses",
-            catatan: docData.catatan,
+            jenisSurat: d.jenisSurat || "Tidak ada jenis",
+            jumlahPengajuan: d.jumlahPengajuan || 0,
+            status: d.status || "diproses",
+            catatan: d.catatan,
             tanggal_pengajuan: formattedDate,
           };
         });
-        
+
         setArchive(data);
-      } catch (error) {
-        console.error("Gagal memuat data:", error);
+      } catch (e) {
+        console.error(e);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-    
   }, [user]);
 
   return (
@@ -129,7 +128,9 @@ export default function ArchivePage() {
               </div>
 
               {loading ? (
-                <div className="p-8 text-center text-slate-500">Memuat data...</div>
+                <div className="p-8 text-center text-slate-500">
+                  Memuat data...
+                </div>
               ) : archive.length === 0 ? (
                 <div className="p-8 text-center text-slate-500">
                   Belum ada riwayat pengajuan surat.
@@ -151,7 +152,9 @@ export default function ArchivePage() {
                         <tr key={item.id} className="align-top hover:bg-slate-50/60">
                           <td className="px-6 py-4">{item.tanggal_pengajuan}</td>
                           <td className="px-6 py-4">{item.jenisSurat}</td>
-                          <td className="px-6 py-4 text-center">{item.jumlahPengajuan}</td>
+                          <td className="px-6 py-4 text-center">
+                            {item.jumlahPengajuan}
+                          </td>
                           <td className="px-6 py-4">
                             <span
                               className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${STATUS_CONFIG[item.status].bg} ${STATUS_CONFIG[item.status].text}`}
