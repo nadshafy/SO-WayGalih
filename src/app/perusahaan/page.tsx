@@ -43,6 +43,7 @@ export default function PerusahaanPage() {
         const cleanBase64 = base64.includes(",") ? base64.split(",")[1] : base64;
 
         dataObj[`${field}FileData`] = cleanBase64;
+        dataObj[`${field}FileName`] = file.name;
       }
     }
 
