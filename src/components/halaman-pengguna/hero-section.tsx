@@ -88,12 +88,6 @@ const LoggedInHero = () => {
             Ajukan Surat
           </Link>
           <Link
-            href="/status"
-            className="w-full transform rounded-full border border-white/70 px-6 py-3 text-center text-sm font-semibold text-white shadow-lg transition duration-300 hover:-translate-y-0.5 hover:bg-white/10 hover:shadow-xl sm:w-auto sm:px-8 sm:py-4 sm:text-base"
-          >
-            Lihat Status Pengajuan
-          </Link>
-          <Link
             href={user ? `/${user.uid}/arsip` : "#"}
             aria-disabled={!user}
             className="w-full transform rounded-full bg-gradient-to-r from-white via-[#dbe7ff] to-white px-6 py-3 text-center text-sm font-semibold text-[#0a3d91] shadow-lg transition duration-300 hover:-translate-y-0.5 hover:shadow-xl sm:w-auto sm:px-8 sm:py-4 sm:text-base"
