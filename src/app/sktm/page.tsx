@@ -45,6 +45,7 @@ export default function SKTMPage() {
           : base64;
 
         dataObj[`${field}FileData`] = cleanBase64;
+        dataObj[`${field}FileName`] = file.name;
       }
     }
 
