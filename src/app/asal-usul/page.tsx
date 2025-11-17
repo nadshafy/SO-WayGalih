@@ -9,12 +9,21 @@ import AuthGuard from "@/src/components/auth/auth-guard";
 import { db } from "@/src/lib/firebase/init";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { toBase64 } from "@/src/lib/file";
+import { useAuth } from "@/src/components/auth/useAuth";
+
 
 export default function AsalUsulPage() {
   const router = useRouter();
+  const { user } = useAuth();
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (!user) {
+      alert("Anda harus login terlebih dahulu sebelum mengajukan surat.");
+      router.push("/login");
+      return;
+    }
 
     const formData = new FormData(event.currentTarget);
 
@@ -46,6 +55,7 @@ export default function AsalUsulPage() {
         jenisSurat: "asal-usul",
         status: "diproses",
         tanggal_pengajuan: serverTimestamp(),
+        uid: user.uid,
       });
 
       const response = await fetch("/api/surat", {
@@ -54,6 +64,7 @@ export default function AsalUsulPage() {
         body: JSON.stringify({
           suratType: "asal-usul",
           formData: dataObj,
+          uid: user.uid,
         }),
       });
 

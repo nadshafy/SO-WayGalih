@@ -8,12 +8,20 @@ import DomisiliPageContent from "@/src/components/domisili/page-content";
 import AuthGuard from "@/src/components/auth/auth-guard";
 import { db } from "@/src/lib/firebase/init";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { useAuth } from "@/src/components/auth/useAuth";
 
 export default function DomisiliPage() {
   const router = useRouter();
+  const { user } = useAuth();
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (!user) {
+      alert("Anda harus login terlebih dahulu sebelum mengajukan surat.");
+      router.push("/login");
+      return;
+    }
 
     const formData = new FormData(event.currentTarget);
     const data = Object.fromEntries(formData.entries());
@@ -64,6 +72,7 @@ export default function DomisiliPage() {
         jenisSurat: "domisili",
         status: "diproses",
         tanggal_pengajuan: serverTimestamp(),
+        uid: user.uid,
       });
 
       const response = await fetch("/api/surat", {
@@ -72,6 +81,7 @@ export default function DomisiliPage() {
         body: JSON.stringify({
           suratType: "domisili",
           formData: dataObj,
+          uid: user.uid,
         }),
       });
 

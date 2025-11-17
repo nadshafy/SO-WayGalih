@@ -9,12 +9,21 @@ import AuthGuard from "@/src/components/auth/auth-guard";
 import { db } from "@/src/lib/firebase/init";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { toBase64 } from "@/src/lib/file";
+import { useAuth } from "@/src/components/auth/useAuth";
+
 
 export default function SKTMSPage() {
   const router = useRouter();
+  const { user } = useAuth();
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (!user) {
+      alert("Anda harus login terlebih dahulu sebelum mengajukan surat.");
+      router.push("/login");
+      return;
+    }
 
     const formData = new FormData(event.currentTarget);
     const dataObj: Record<string, string> = {};
@@ -43,6 +52,7 @@ export default function SKTMSPage() {
         jenisSurat: "sktms",
         status: "diproses",
         tanggal_pengajuan: serverTimestamp(),
+        uid: user.uid,
       });
 
       const response = await fetch("/api/surat", {
@@ -51,6 +61,7 @@ export default function SKTMSPage() {
         body: JSON.stringify({
           suratType: "sktms",
           formData: dataObj,
+          uid: user.uid,
         }),
       });
 
