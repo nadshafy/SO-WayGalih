@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Footer from "@/src/components/footer";
 import AsalUsulPageContent from "@/src/components/asal-usul/page-content";
 import AuthGuard from "@/src/components/auth/auth-guard";
-import { db } from "@/src/lib/firebase/init"; 
+import { db } from "@/src/lib/firebase/init";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { toBase64 } from "@/src/lib/file";
 
@@ -17,26 +17,34 @@ export default function AsalUsulPage() {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
-    const file = formData.get("file") as File | null;
     const dataObj: Record<string, string> = {};
 
     formData.forEach((value, key) => {
-      if (key !== "file") dataObj[key] = value.toString();
+      if (!(value instanceof File)) {
+        dataObj[key] = value.toString();
+      }
     });
 
-    const base64File = file ? await toBase64(file) : null;
+    const fileFields = ["pengantar_rt"];
 
-    const payload = {
-      ...dataObj,
-      jenisSurat: "asal-usul",
-      fileName: file?.name || "",
-      fileData: base64File,
-    };
+    for (const field of fileFields) {
+      const file = formData.get(field) as File | null;
+
+      if (file && file.name) {
+        const base64 = await toBase64(file);
+        const cleanBase64 = base64.includes(",")
+          ? base64.split(",")[1]
+          : base64;
+
+        dataObj[`${field}FileName`] = file.name;
+        dataObj[`${field}FileData`] = cleanBase64;
+      }
+    }
 
     try {
-      await addDoc(collection(db, "surat_pengajuan"), { 
+      await addDoc(collection(db, "surat_pengajuan"), {
         ...dataObj,
-        jenisSurat: "asal-usul", 
+        jenisSurat: "asal-usul",
         status: "diproses",
         tanggal_pengajuan: serverTimestamp(),
       });
@@ -45,21 +53,19 @@ export default function AsalUsulPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          suratType: "asal-usul", 
-          formData: payload,   
+          suratType: "asal-usul",
+          formData: dataObj,
         }),
       });
 
       if (!response.ok) {
-        throw new Error("Gagal mengirim data ke server (API).");
+        throw new Error("Gagal mengirim data ke server.");
       }
 
-      const result = await response.json();
-      console.log("Response dari server:", result);
+      await response.json();
 
       alert("Form berhasil dikirim! Data Anda sedang diproses.");
-      router.push("/status");
-
+      router.push("/halaman-pengguna");
     } catch (err) {
       console.error("Gagal mengirim data:", err);
       alert("Terjadi kesalahan saat mengirim data. Silakan coba lagi nanti.");

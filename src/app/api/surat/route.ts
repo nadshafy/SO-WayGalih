@@ -1,17 +1,5 @@
 import { APPSCRIPT_URL } from "../config";
 
-async function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      resolve(result.split(",")[1]); // ambil base64 tanpa prefix data:
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -23,9 +11,9 @@ export async function POST(req: Request) {
       );
     }
 
-    const { suratType, formData } = body;
+    const { formData } = body;
 
-    // --- Konversi semua file menjadi base64 ---
+    // 🧩 Define file fields to check
     const fileFields = [
       "ktp",
       "kk",
@@ -36,48 +24,46 @@ export async function POST(req: Request) {
       "file_gaji",
     ];
 
-    const processedFormData: Record<string, any> = { ...formData };
+    const fileData: Record<string, string> = {};
+    const fileNames: Record<string, string> = {};
 
+    // 🧩 Convert files to base64
     for (const field of fileFields) {
       const file = formData[field];
-      if (file && typeof file === "object" && file.name) {
-        // konversi ke base64
-        const base64Data = await fileToBase64(file);
-        processedFormData[`${field}FileName`] = file.name;
-        processedFormData[`${field}FileData`] = base64Data;
-        delete processedFormData[field]; // hapus objek file mentah
+      if (file && file.name) {
+        const arrayBuffer = await file.arrayBuffer();
+        const base64 = Buffer.from(arrayBuffer).toString("base64");
+        fileData[field] = base64;
+        fileNames[field] = file.name;
+      }
+    }
+
+    // 🧩 Flatten the structure for Google Apps Script
+    for (const field of fileFields) {
+      if (fileData[field] && fileNames[field]) {
+        formData[`${field}FileData`] = fileData[field];
+        formData[`${field}FileName`] = fileNames[field];
       }
     }
 
     const payload = {
-      suratType,
-      formData: processedFormData,
+      suratType: body.suratType,
+      formData,
     };
 
-    const url = APPSCRIPT_URL;
-    if (!url) {
-      return Response.json(
-        { status: "error", message: "APPSCRIPT_URL not configured" },
-        { status: 500 }
-      );
-    }
-
-    const res = await fetch(url, {
+    // 🧩 Send to Apps Script endpoint
+    const res = await fetch(APPSCRIPT_URL!, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-
-    if (!res.ok) {
-      throw new Error(`Google Apps Script error: ${res.status}`);
-    }
 
     const data = await res.json();
     return Response.json(data);
   } catch (error: any) {
     console.error("POST /api/surat error:", error);
     return Response.json(
-      { status: "error", message: error.message || "Server error" },
+      { status: "error", message: error.message },
       { status: 500 }
     );
   }
@@ -87,7 +73,6 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const suratType = searchParams.get("type");
-
     if (!suratType) {
       return Response.json(
         { status: "error", message: "Parameter 'type' diperlukan." },
@@ -95,22 +80,13 @@ export async function GET(req: Request) {
       );
     }
 
-    const url = APPSCRIPT_URL;
-    if (!url) {
-      return Response.json(
-        { status: "error", message: "APPSCRIPT_URL not configured" },
-        { status: 500 }
-      );
-    }
-
-    const res = await fetch(`${url}?type=${encodeURIComponent(suratType)}`);
+    const res = await fetch(`${APPSCRIPT_URL}?type=${encodeURIComponent(suratType)}`);
     const data = await res.json();
-
     return Response.json(data);
   } catch (error: any) {
     console.error("GET /api/surat error:", error);
     return Response.json(
-      { status: "error", message: error.message || "Server error" },
+      { status: "error", message: error.message },
       { status: 500 }
     );
   }

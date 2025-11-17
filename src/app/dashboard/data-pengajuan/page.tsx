@@ -80,7 +80,7 @@ export default function DataPengajuan() {
       const matchesKeyword =
         keyword.length === 0 ||
         item.nama.toLowerCase().includes(keyword) ||
-        item.jenis.toLowerCase().includes(keyword);
+        item.jenisSurat.toLowerCase().includes(keyword);
 
       if (!matchesKeyword) return false;
 

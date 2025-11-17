@@ -1,26 +1,25 @@
 "use client";
 
 import Head from "next/head";
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { db } from "@/src/lib/firebase/init";
 import Footer from "@/src/components/footer";
 import AuthGuard from "@/src/components/auth/auth-guard";
-import { useAuth } from "@/src/components/auth/useAuth"; 
+import { useAuth } from "@/src/components/auth/useAuth";
 
 type ArchiveItem = {
   id: string;
-  tanggal: string;
+  tanggal_pengajuan: string;
   jenisSurat: string;
   jumlahPengajuan: number;
-  statusPengajuan: "diproses" | "ditolak" | "selesai";
+  status: "diproses" | "ditolak" | "selesai";
   catatan?: string;
 };
 
 const STATUS_CONFIG: Record<
-  ArchiveItem["statusPengajuan"],
+  ArchiveItem["status"],
   { label: string; bg: string; text: string }
 > = {
   diproses: {
@@ -46,30 +45,59 @@ export default function ArchivePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
-
     const fetchData = async () => {
+      // Pindahkan pengecekan 'user' ke dalam fungsi async
+      // Jika tidak ada user, kita tetap harus set loading ke false
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
       try {
         const q = query(
-          collection(db, "pengajuanSurat"),
+          collection(db, "surat_pengajuan"),
           where("userId", "==", user.uid),
-          orderBy("tanggal", "desc")
+          orderBy("tanggal_pengajuan", "desc")
         );
         const querySnapshot = await getDocs(q);
-        const data: ArchiveItem[] = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...(doc.data() as Omit<ArchiveItem, "id">),
-        }));
+        
+        const data: ArchiveItem[] = querySnapshot.docs.map((doc) => {
+          const docData = doc.data();
+          
+          const timestamp = docData.tanggal_pengajuan;
+          let formattedDate = "Data tanggal tidak valid";
+
+          if (timestamp && typeof timestamp.toDate === 'function') {
+            formattedDate = timestamp.toDate().toLocaleDateString('id-ID', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric'
+            });
+          }
+
+          return {
+            id: doc.id,
+            jenisSurat: docData.jenisSurat || "Tidak ada jenis",
+            jumlahPengajuan: docData.jumlahPengajuan || 0,
+            status: docData.status || "diproses",
+            catatan: docData.catatan,
+            tanggal_pengajuan: formattedDate,
+          };
+        });
+        
         setArchive(data);
       } catch (error) {
         console.error("Gagal memuat data:", error);
       } finally {
+        // 'finally' akan selalu berjalan setelah 'try' (jika user ada)
         setLoading(false);
       }
     };
 
+    // Panggil fetchData di dalam useEffect
     fetchData();
-  }, [user]);
+    
+  }, [user]); // Tetap jalankan ulang ketika 'user' berubah
 
   return (
     <>
@@ -125,14 +153,14 @@ export default function ArchivePage() {
                     <tbody className="divide-y divide-slate-100">
                       {archive.map((item) => (
                         <tr key={item.id} className="align-top hover:bg-slate-50/60">
-                          <td className="px-6 py-4">{item.tanggal}</td>
+                          <td className="px-6 py-4">{item.tanggal_pengajuan}</td>
                           <td className="px-6 py-4">{item.jenisSurat}</td>
                           <td className="px-6 py-4 text-center">{item.jumlahPengajuan}</td>
                           <td className="px-6 py-4">
                             <span
-                              className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${STATUS_CONFIG[item.statusPengajuan].bg} ${STATUS_CONFIG[item.statusPengajuan].text}`}
+                              className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${STATUS_CONFIG[item.status].bg} ${STATUS_CONFIG[item.status].text}`}
                             >
-                              {STATUS_CONFIG[item.statusPengajuan].label}
+                              {STATUS_CONFIG[item.status].label}
                             </span>
                           </td>
                           <td className="px-6 py-4">{item.catatan ?? "-"}</td>

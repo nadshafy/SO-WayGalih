@@ -18,19 +18,27 @@ export default function SKTMPage() {
 
     const formData = new FormData(event.currentTarget);
     const dataObj: Record<string, string> = {};
+
     formData.forEach((value, key) => {
-      if (key !== "file") dataObj[key] = value.toString();
+      if (!(value instanceof File)) {
+        dataObj[key] = value.toString();
+      }
     });
 
-    const file = formData.get("file") as File | null;
-    const base64File = file ? await toBase64(file) : null;
+    const fileFields = ["file"];
+    for (const field of fileFields) {
+      const file = formData.get(field) as File | null;
 
-    const payload = {
-      ...dataObj,
-      jenisSurat: "sktm",
-      fileName: file?.name || "",
-      fileData: base64File,
-    };
+      if (file && file.name) {
+        const base64 = await toBase64(file);
+        const cleanBase64 = base64.includes(",")
+          ? base64.split(",")[1]
+          : base64;
+
+        dataObj[`${field}FileName`] = file.name;
+        dataObj[`${field}FileData`] = cleanBase64;
+      }
+    }
 
     try {
       await addDoc(collection(db, "surat_pengajuan"), {
@@ -43,16 +51,18 @@ export default function SKTMPage() {
       const response = await fetch("/api/surat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ suratType: "sktm", formData: payload }),
+        body: JSON.stringify({
+          suratType: "sktm",
+          formData: dataObj,
+        }),
       });
 
-      if (!response.ok) throw new Error("Gagal mengirim data ke server");
+      if (!response.ok) throw new Error();
 
-      const result = await response.json();
-      console.log(result);
+      await response.json();
 
       alert("Form berhasil dikirim! Data Anda sedang diproses.");
-      router.push("/status");
+      router.push("/halaman-pengguna");
     } catch (error) {
       console.error(error);
       alert("Terjadi kesalahan saat mengirim data. Silakan coba lagi nanti.");

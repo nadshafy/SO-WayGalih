@@ -8,9 +8,19 @@ type PengajuanDetailProps = {
 };
 
 const PengajuanDetail = ({ detail, statusLabel }: PengajuanDetailProps) => {
+  const timestamp = detail.tanggal_pengajuan as any;
+  let formattedDate = "Data tanggal tidak valid";
+
+  if (timestamp && typeof timestamp.toDate === "function") {
+    formattedDate = timestamp.toDate().toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  }
+
   return (
     <div className="min-h-screen bg-[#f4f6f9] pb-16 text-slate-800">
-      {/* Tombol Kembali (floating) */}
       <Link
         href="/dashboard/data-pengajuan"
         aria-label="Kembali"
@@ -22,7 +32,6 @@ const PengajuanDetail = ({ detail, statusLabel }: PengajuanDetailProps) => {
         <span className="hidden sm:inline">Kembali</span>
       </Link>
 
-      {/* Header tanpa badge */}
       <header className="relative overflow-hidden bg-gradient-to-br from-[#1a3491] via-[#0f2d7a] to-[#0a3d91] text-white">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.18),_transparent_60%)]" />
           <div className="relative mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-6">
@@ -43,9 +52,8 @@ const PengajuanDetail = ({ detail, statusLabel }: PengajuanDetailProps) => {
 
             <nav className="flex flex-wrap items-center gap-2 p-1">
               <div className="flex flex-col items-center gap-1 sm:items-end">
-                {/* badge “Detail Pengajuan” DIHAPUS */}
                 <h1 className="text-center text-lg font-semibold sm:text-2xl sm:text-right">
-                  {detail.jenis}
+                  {detail.jenisSurat}
                 </h1>
               </div>
             </nav>
@@ -53,31 +61,27 @@ const PengajuanDetail = ({ detail, statusLabel }: PengajuanDetailProps) => {
         </header>
 
 
-      {/* Main — card tidak overlap (pakai margin top positif) */}
       <main className="mx-auto w-full max-w-6xl px-4 pt-6 sm:px-6 sm:pt-8">
         <div className="rounded-3xl border border-slate-100 bg-white/95 p-5 shadow-xl sm:p-8">
-          {/* Header info row */}
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="text-xs uppercase tracking-wide text-slate-400 sm:text-sm">Nama Pemohon</p>
-              <h2 className="text-xl font-semibold text-[#0a3d91] sm:text-2xl">{detail.nama}</h2>
+              <h2 className="text-xl font-semibold text-[#0a3d91] sm:text-2xl">{detail.nama ?? detail.nama_pendiri}</h2>
               <p className="mt-2 text-sm text-slate-500">
                 NIK: <span className="font-semibold">{detail.nik}</span>
               </p>
             </div>
 
-            {/* Status jadi teks biasa (bukan badge) */}
             <div className="flex flex-col items-start gap-1 sm:items-end">
               <span className="text-xs uppercase tracking-wide text-slate-400 sm:text-sm">Status Pengajuan</span>
               <span className="text-sm font-semibold text-[#0a3d91]">{statusLabel}</span>
             </div>
           </div>
 
-          {/* Info sections */}
           <div className="mt-8 grid gap-6 lg:grid-cols-2">
             <section className="rounded-2xl border border-slate-100 bg-slate-50/70 p-5">
               <h3 className="text-base font-semibold text-[#0a3d91]">Alamat Domisili</h3>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600">{detail.alamat}</p>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">{detail.alamat ?? detail.alamat_lembaga ?? detail.kecamatan ?? "way galih"}</p>
             </section>
 
             <section className="rounded-2xl border border-slate-100 bg-slate-50/70 p-5">
@@ -90,7 +94,6 @@ const PengajuanDetail = ({ detail, statusLabel }: PengajuanDetailProps) => {
             </section>
           </div>
 
-          {/* Lampiran */}
           <section className="mt-6">
             <h3 className="text-base font-semibold text-[#0a3d91]">Lampiran Berkas</h3>
             {detail.lampiran?.length ? (
@@ -113,11 +116,10 @@ const PengajuanDetail = ({ detail, statusLabel }: PengajuanDetailProps) => {
                 ))}
               </ul>
             ) : (
-              <p className="mt-3 text-sm text-slate-500">Tidak ada lampiran.</p>
+              <p className="mt-3 text-sm text-slate-500">Lampiran ada di spreadsheet.</p>
             )}
           </section>
 
-          {/* Footer actions — tanggal juga tanpa badge */}
           <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <Link
               href="/dashboard/data-pengajuan"
@@ -129,7 +131,7 @@ const PengajuanDetail = ({ detail, statusLabel }: PengajuanDetailProps) => {
               <span className="text-[11px] uppercase tracking-wide text-slate-400 sm:text-xs">
                 Tanggal Pengajuan
               </span>
-              <span className="text-sm font-semibold text-[#0a3d91]">{detail.tanggal}</span>
+              <span className="text-sm font-semibold text-[#0a3d91]">{formattedDate}</span>
             </div>
           </div>
         </div>
