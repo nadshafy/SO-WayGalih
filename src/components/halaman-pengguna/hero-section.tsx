@@ -42,17 +42,17 @@ const LoggedInHero = () => {
             </span>
           </div>
         </div>
-
-        <div className="flex items-center gap-3">
-
+            <div className="flex items-center gap-3">
+     
           <button
             type="button"
             onClick={handleLogout}
-            className="hidden items-center gap-2 rounded-full border border-white/40 px-4 py-2 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:bg-white/10 min-[420px]:flex md:text-sm"
+            className="items-center gap-2 rounded-full border border-white/40 px-6 py-3 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:bg-white/10 = md:text-sm"
           >
             Keluar
           </button>
         </div>
+
       </div>
 
       <div className="relative mx-auto mt-6 max-w-[900px] px-4 pb-12 text-center sm:mt-10 sm:px-6 sm:pb-16">
@@ -87,7 +87,6 @@ const LoggedInHero = () => {
           </Link>
         </div>
       </div>
-
     </header>
   );
 };
