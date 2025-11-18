@@ -44,15 +44,6 @@ const LoggedInHero = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            className="flex h-6 w-8 flex-col justify-between md:hidden"
-            aria-label="Buka menu navigasi"
-          >
-            <span className="block h-[3px] rounded-full bg-white" />
-            <span className="block h-[3px] rounded-full bg-white" />
-            <span className="block h-[3px] rounded-full bg-white" />
-          </button>
 
           <button
             type="button"
@@ -97,15 +88,6 @@ const LoggedInHero = () => {
         </div>
       </div>
 
-      <div className="px-4 pb-6 md:hidden">
-        <button
-          type="button"
-          onClick={handleLogout}
-          className="flex w-full items-center justify-center rounded-full border border-white/40 px-4 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-white/10"
-        >
-          Log Out
-        </button>
-      </div>
     </header>
   );
 };
