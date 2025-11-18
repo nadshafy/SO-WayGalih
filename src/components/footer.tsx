@@ -28,7 +28,7 @@ export default function Footer() {
 
         {/* RIGHT SECTION - COPYRIGHT */}
         <p className="text-xs text-slate-300 text-center sm:text-right">
-          © {year} Pemerintahan Desa Way Galih. All rights reserved.
+          &copy; {year} 06-Informatika - Kontak:085279880071
         </p>
       </div>
     </footer>
