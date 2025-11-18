@@ -27,16 +27,6 @@ const HeroSection = () => {
             </span>
           </div>
         </div>
-
-        <button
-          type="button"
-          className="flex h-5 w-7 flex-col justify-between md:hidden"
-          aria-label="Buka menu navigasi"
-        >
-          <span className="block h-[3px] rounded-full bg-white transition-transform duration-300" />
-          <span className="block h-[3px] rounded-full bg-white transition-transform duration-300" />
-          <span className="block h-[3px] rounded-full bg-white transition-transform duration-300" />
-        </button>
       </div>
 
       <div className="relative mx-auto mt-6 max-w-[900px] px-4 pb-12 text-center sm:mt-10 sm:px-6 sm:pb-16">
