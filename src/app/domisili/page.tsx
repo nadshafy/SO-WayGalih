@@ -60,6 +60,7 @@ export default function DomisiliPage() {
       if (file && file.name) {
         const base64 = await toBase64(file);
         const cleanBase64 = base64.includes(",") ? base64.split(",")[1] : base64;
+
         dataObj[`${field}FileData`] = cleanBase64;
         dataObj[`${field}FileName`] = file.name;
       }
@@ -69,11 +70,31 @@ export default function DomisiliPage() {
 
     try {
       await addDoc(collection(db, "users", user.uid, "surat_pengajuan"), {
-        ...dataObj,
-        jenisSurat: "domisili",
+        uid: user.uid,
+        jenisSurat: "Surat Keterangan Domisili",
         status: "diproses",
         tanggal_pengajuan: serverTimestamp(),
-        uid: user.uid,
+        jumlahPengajuan: 1,
+        catatan: "",
+        lampiran: [
+          {
+            label: "KTP",
+            url: dataObj["ktpFileData"] || "",
+            fileName: dataObj["ktpFileName"] || "",
+          },
+          {
+            label: "KK",
+            url: dataObj["kkFileData"] || "",
+            fileName: dataObj["kkFileName"] || "",
+          },
+          {
+            label: "Pengantar RT",
+            url: dataObj["pengantar_rtFileData"] || "",
+            fileName: dataObj["pengantar_rtFileName"] || "",
+          },
+        ],
+
+        ...dataObj,
       });
 
       const response = await fetch("/api/surat", {
@@ -93,7 +114,6 @@ export default function DomisiliPage() {
 
       alert("Form berhasil dikirim! Data Anda sedang diproses.");
       router.push("/halaman-pengguna");
-
     } catch (error) {
       console.error("Gagal mengirim data:", error);
       alert("Terjadi kesalahan. Silakan coba lagi nanti.");

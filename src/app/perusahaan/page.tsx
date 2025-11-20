@@ -40,7 +40,8 @@ export default function PerusahaanPage() {
 
       if (file && file.name) {
         const base64 = await toBase64(file);
-        const cleanBase64 = base64.includes(",") ? base64.split(",")[1] : base64;
+        const cleanBase64 =
+          base64.includes(",") ? base64.split(",")[1] : base64;
 
         dataObj[`${field}FileData`] = cleanBase64;
         dataObj[`${field}FileName`] = file.name;
@@ -50,12 +51,29 @@ export default function PerusahaanPage() {
     dataObj["jenisSurat"] = "perusahaan";
 
     try {
+  
       await addDoc(collection(db, "users", user.uid, "surat_pengajuan"), {
-        ...dataObj,
-        jenisSurat: "perusahaan",
+        uid: user.uid,
+        jenisSurat: "Surat Domisili Perusahaan",
         status: "diproses",
         tanggal_pengajuan: serverTimestamp(),
-        uid: user.uid,
+        jumlahPengajuan: 1,
+        catatan: "",
+
+        lampiran: [
+          {
+            label: "KTP Pendiri",
+            url: dataObj["ktp_pendiriFileData"] || "",
+            fileName: dataObj["ktp_pendiriFileName"] || "",
+          },
+          {
+            label: "Akta Lembaga",
+            url: dataObj["akta_lembagaFileData"] || "",
+            fileName: dataObj["akta_lembagaFileName"] || "",
+          },
+        ],
+
+        ...dataObj,
       });
 
       const response = await fetch("/api/surat", {

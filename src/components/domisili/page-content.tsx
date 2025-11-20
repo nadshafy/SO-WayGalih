@@ -79,7 +79,7 @@ const DomisiliPageContent = ({ onSubmit }: DomisiliPageContentProps) => {
 
         <div className="mt-6 rounded-3xl bg-white p-6 shadow-xl sm:p-8">
           <form className="space-y-10" onSubmit={onSubmit}>
-            {/* DATA DIRI */}
+            {}
             <section>
               <h2 className="mb-4 text-base font-semibold uppercase tracking-wide text-[#0a3d91]">
                 I. Data Diri Pemohon
@@ -176,7 +176,7 @@ const DomisiliPageContent = ({ onSubmit }: DomisiliPageContentProps) => {
               </div>
             </section>
 
-            {/* FILE UPLOADS */}
+            {}
             <section>
               <h2 className="mb-4 text-base font-semibold uppercase tracking-wide text-[#0a3d91]">
                 II. Lampiran Persyaratan

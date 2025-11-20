@@ -13,7 +13,6 @@ export async function POST(req: Request) {
 
     const { formData } = body;
 
-    // 🧩 Define file fields to check
     const fileFields = [
       "ktp",
       "kk",
@@ -27,7 +26,6 @@ export async function POST(req: Request) {
     const fileData: Record<string, string> = {};
     const fileNames: Record<string, string> = {};
 
-    // 🧩 Convert files to base64
     for (const field of fileFields) {
       const file = formData[field];
       if (file && file.name) {
@@ -38,7 +36,6 @@ export async function POST(req: Request) {
       }
     }
 
-    // 🧩 Flatten the structure for Google Apps Script
     for (const field of fileFields) {
       if (fileData[field] && fileNames[field]) {
         formData[`${field}FileData`] = fileData[field];
@@ -51,7 +48,6 @@ export async function POST(req: Request) {
       formData,
     };
 
-    // 🧩 Send to Apps Script endpoint
     const res = await fetch(APPSCRIPT_URL!, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

@@ -31,16 +31,14 @@ import {
 } from "@/src/components/ui/dialog";
 import type { TimelineItemType, TimelineStatus } from "@/src/lib/status-data";
 
-// ✅ Firebase imports
-import { db } from "@/src/lib/firebase/init"; // pastikan sudah setup firebase config
+import { db } from "@/src/lib/firebase/init"; 
 import { doc, onSnapshot } from "firebase/firestore";
 
 type StatusPageContentProps = {
   items: TimelineItemType[];
   descriptions: Record<TimelineStatus, string>;
 
-  // Realtime props
-  id: string; // ID dokumen Firestore
+  id: string; 
 };
 
 const RATING_VALUES = [1, 2, 3, 4, 5];
@@ -49,7 +47,6 @@ const StatusPageContent = ({ items, descriptions, id }: StatusPageContentProps) 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-  // 🔥 Realtime Firestore Data
   const [detail, setDetail] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -66,7 +63,6 @@ const StatusPageContent = ({ items, descriptions, id }: StatusPageContentProps) 
     return () => unsub();
   }, [id]);
 
-  // 🔁 Mapping status otomatis dari Firestore detail
   const mappedItems = useMemo(() => {
     if (!detail) return items;
 
@@ -103,7 +99,6 @@ const StatusPageContent = ({ items, descriptions, id }: StatusPageContentProps) 
     [mappedItems]
   );
 
-  // ===== FEEDBACK UI =====
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
   const [hoveredRating, setHoveredRating] = useState<number | null>(null);
@@ -174,7 +169,7 @@ const StatusPageContent = ({ items, descriptions, id }: StatusPageContentProps) 
         <span className="hidden sm:inline">Kembali</span>
       </Link>
 
-      {/* Header */}
+      {}
       <header className="bg-gradient-to-br from-[#1a3491] to-[#0a3d91] text-white">
         <div className="mx-auto flex max-w-4xl flex-col items-center gap-4 px-4 py-8 sm:flex-row sm:justify-between">
           <div className="flex items-center gap-3">
@@ -195,7 +190,7 @@ const StatusPageContent = ({ items, descriptions, id }: StatusPageContentProps) 
         </div>
       </header>
 
-      {/* Main Content */}
+      {}
       <main className="mx-auto -mt-6 max-w-4xl px-3 sm:px-6">
         <div className="rounded-2xl bg-white px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-[#0a3d91] shadow-lg">
           Riwayat Proses Pengajuan
@@ -284,12 +279,11 @@ const StatusPageContent = ({ items, descriptions, id }: StatusPageContentProps) 
 };
 
 function DesktopTimeline({ items, descriptions }: { items: TimelineItemType[]; descriptions: Record<TimelineStatus, string> }) {
-  // ... (kode timeline tetap sama seperti punyamu)
-  return <></>; // potong untuk ringkas, tapi sama seperti versi kamu
+  return <></>; 
 }
 
 function MobileTimeline({ items, descriptions }: { items: TimelineItemType[]; descriptions: Record<TimelineStatus, string> }) {
-  // ... (kode timeline tetap sama seperti punyamu)
+  
   return <></>;
 }
 

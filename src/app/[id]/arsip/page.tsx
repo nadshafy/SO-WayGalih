@@ -7,7 +7,8 @@ import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "@/src/lib/firebase/init";
 import Footer from "@/src/components/footer";
 import AuthGuard from "@/src/components/auth/auth-guard";
-import { useAuth } from "@/src/components/auth/useAuth";
+
+import { useAuth } from "@/src/contexts/auth-context";
 
 type ArchiveItem = {
   id: string;
@@ -52,10 +53,13 @@ export default function ArchivePage() {
       }
 
       try {
+        console.log("User UID di arsip:", user.uid);
+
         const q = query(
           collection(db, "users", user.uid, "surat_pengajuan"),
           orderBy("tanggal_pengajuan", "desc")
         );
+
         const querySnapshot = await getDocs(q);
 
         const data: ArchiveItem[] = querySnapshot.docs.map((doc) => {
@@ -85,7 +89,7 @@ export default function ArchivePage() {
 
         setArchive(data);
       } catch (e) {
-        console.error(e);
+        console.error("Gagal mengambil riwayat:", e);
       } finally {
         setLoading(false);
       }
@@ -149,7 +153,10 @@ export default function ArchivePage() {
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                       {archive.map((item) => (
-                        <tr key={item.id} className="align-top hover:bg-slate-50/60">
+                        <tr
+                          key={item.id}
+                          className="align-top hover:bg-slate-50/60"
+                        >
                           <td className="px-6 py-4">{item.tanggal_pengajuan}</td>
                           <td className="px-6 py-4">{item.jenisSurat}</td>
                           <td className="px-6 py-4 text-center">

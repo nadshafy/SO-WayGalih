@@ -11,7 +11,6 @@ import {
 import { onAuthStateChanged, signOut, type User } from "firebase/auth";
 import { auth } from "@/src/lib/firebase/init";
 
-// Admin UID (yang kamu daftarkan di Firebase)
 const ADMIN_UID = "CfLWcqwwaTb3zoC0oS0ckXh4sjV2";
 
 type UserRole = "admin" | "user";
@@ -26,7 +25,6 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-// ✅ Role ditentukan berdasarkan UID, bukan email
 const determineRole = (user: User | null): UserRole | null => {
   if (!user) return null;
   return user.uid === ADMIN_UID ? "admin" : "user";

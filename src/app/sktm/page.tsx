@@ -40,9 +40,8 @@ export default function SKTMPage() {
 
       if (file && file.name) {
         const base64 = await toBase64(file);
-        const cleanBase64 = base64.includes(",")
-          ? base64.split(",")[1]
-          : base64;
+        const cleanBase64 =
+          base64.includes(",") ? base64.split(",")[1] : base64;
 
         dataObj[`${field}FileData`] = cleanBase64;
         dataObj[`${field}FileName`] = file.name;
@@ -53,11 +52,32 @@ export default function SKTMPage() {
 
     try {
       await addDoc(collection(db, "users", user.uid, "surat_pengajuan"), {
-        ...dataObj,
-        jenisSurat: "sktm",
+        uid: user.uid,
+        jenisSurat: "Surat Keterangan Tidak Mampu (SKTM)",
         status: "diproses",
         tanggal_pengajuan: serverTimestamp(),
-        uid: user.uid,
+        jumlahPengajuan: 1,
+        catatan: "",
+
+        lampiran: [
+          {
+            label: "KTP",
+            url: dataObj["ktpFileData"] || "",
+            fileName: dataObj["ktpFileName"] || "",
+          },
+          {
+            label: "KK",
+            url: dataObj["kkFileData"] || "",
+            fileName: dataObj["kkFileName"] || "",
+          },
+          {
+            label: "Surat Keterangan Tidak Mampu",
+            url: dataObj["surat_keteranganFileData"] || "",
+            fileName: dataObj["surat_keteranganFileName"] || "",
+          },
+        ],
+
+        ...dataObj,
       });
 
       const response = await fetch("/api/surat", {
@@ -78,7 +98,6 @@ export default function SKTMPage() {
 
       alert("Form berhasil dikirim! Data Anda sedang diproses.");
       router.push("/halaman-pengguna");
-
     } catch (error) {
       console.error("Gagal mengirim data:", error);
       alert("Terjadi kesalahan saat mengirim data. Silakan coba lagi nanti.");

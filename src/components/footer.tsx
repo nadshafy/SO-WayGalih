@@ -10,7 +10,7 @@ export default function Footer() {
   return (
     <footer className="border-t border-slate-200 bg-[#0a3d91]">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-6 sm:flex-row">
-        {/* LEFT SECTION - BRAND WITH LOGO */}
+        {}
         <Link
           href="/"
           className="flex items-center gap-3 text-white transition hover:opacity-80"
@@ -26,7 +26,7 @@ export default function Footer() {
           <span className="text-lg font-semibold">Desa Way Galih</span>
         </Link>
 
-        {/* RIGHT SECTION - COPYRIGHT */}
+        {}
         <p className="text-xs text-slate-300 text-center sm:text-right">
           &copy; {year} 06-Informatika - Kontak : 085279880071
         </p>

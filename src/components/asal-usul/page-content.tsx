@@ -18,13 +18,13 @@ type AsalUsulPageContentProps = {
 const AsalUsulPageContent = ({ onSubmit }: AsalUsulPageContentProps) => {
   return (
     <div className="min-h-screen bg-[#f4f6f9] pb-16 text-slate-800">
-        {/* FLOATING BACK BUTTON (upper-left) */}
+        {}
         <Link
           href="/halaman-pengguna"
           aria-label="Kembali"
           className="fixed left-4 top-4 z-50 inline-flex items-center gap-2 rounded-full bg-white/95 px-3 py-2 text-sm font-semibold text-[#0a3d91] shadow-lg ring-1 ring-slate-200 backdrop-blur transition hover:-translate-y-0.5 hover:bg-white hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[#0a3d91]/40 sm:left-6 sm:top-6"
         >
-          {/* Arrow icon */}
+          {}
           <svg
             viewBox="0 0 24 24"
             width="18"
@@ -44,7 +44,7 @@ const AsalUsulPageContent = ({ onSubmit }: AsalUsulPageContentProps) => {
           <span className="hidden sm:inline">Kembali</span>
         </Link>
 
-        {/* HEADER */}
+        {}
         <header className="bg-gradient-to-br from-[#1a3491] to-[#0a3d91] text-white">
           <div className="mx-auto flex max-w-4xl flex-col items-center gap-4 px-6 py-10 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-center gap-3">
@@ -75,13 +75,13 @@ const AsalUsulPageContent = ({ onSubmit }: AsalUsulPageContentProps) => {
           </div>
         </header>
 
-        {/* TITLE CARD */}
+        {}
         <div className="mx-auto -mt-8 max-w-4xl px-6">
           <div className="rounded-2xl bg-white px-6 py-5 text-center text-sm font-bold uppercase tracking-wide text-[#0a3d91] shadow-lg">
             Formulir Surat Keterangan Asal-Usul Keluarga
           </div>
 
-          {/* FORM CARD */}
+          {}
           <div className="mt-6 rounded-3xl bg-white p-6 shadow-xl sm:p-8">
             <p className="text-sm font-semibold text-[#0a3d91]">
               Keperluan data diri yang harus disiapkan:
@@ -91,7 +91,7 @@ const AsalUsulPageContent = ({ onSubmit }: AsalUsulPageContentProps) => {
             </ul>
 
             <form className="mt-8 space-y-10" onSubmit={onSubmit}>
-              {/* I. DATA DIRI */}
+              {}
               <section>
                 <h2 className="mb-4 text-base font-semibold uppercase tracking-wide text-[#0a3d91]">
                   I. Data Diri Pemohon
@@ -220,7 +220,7 @@ const AsalUsulPageContent = ({ onSubmit }: AsalUsulPageContentProps) => {
 
               <hr className="border-slate-200" />
 
-              {/* II. AYAH */}
+              {}
               <section>
                 <h2 className="mb-4 text-base font-semibold uppercase tracking-wide text-[#0a3d91]">
                   II. Data Ayah Kandung
@@ -347,7 +347,7 @@ const AsalUsulPageContent = ({ onSubmit }: AsalUsulPageContentProps) => {
 
               <hr className="border-slate-200" />
 
-              {/* III. IBU */}
+              {}
               <section>
                 <h2 className="mb-4 text-base font-semibold uppercase tracking-wide text-[#0a3d91]">
                   III. Data Ibu Kandung
@@ -513,7 +513,7 @@ const AsalUsulPageContent = ({ onSubmit }: AsalUsulPageContentProps) => {
                       </div>
                   </section>
 
-              {/* ACTIONS */}
+              {}
               <div className="mt-2 flex flex-col-reverse gap-4 sm:flex-row sm:justify-end">
                 <button
                   type="submit"

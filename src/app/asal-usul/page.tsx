@@ -11,8 +11,6 @@ import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { toBase64 } from "@/src/lib/file";
 import { useAuth } from "@/src/contexts/auth-context";
 
-
-
 export default function AsalUsulPage() {
   const router = useRouter();
   const { user } = useAuth();
@@ -28,6 +26,7 @@ export default function AsalUsulPage() {
 
     const formData = new FormData(event.currentTarget);
 
+    // 🔹 Ambil field teks
     const dataObj: Record<string, string> = {};
     formData.forEach((value, key) => {
       if (!(value instanceof File)) {
@@ -35,6 +34,7 @@ export default function AsalUsulPage() {
       }
     });
 
+    // 🔹 File yang perlu dikonversi (KK)
     const fileFields = ["kk"];
 
     for (const field of fileFields) {
@@ -42,7 +42,8 @@ export default function AsalUsulPage() {
 
       if (file && file.name) {
         const base64 = await toBase64(file);
-        const cleanBase64 = base64.includes(",") ? base64.split(",")[1] : base64;
+        const cleanBase64 =
+          base64.includes(",") ? base64.split(",")[1] : base64;
 
         dataObj[`${field}FileData`] = cleanBase64;
         dataObj[`${field}FileName`] = file.name;
@@ -52,14 +53,33 @@ export default function AsalUsulPage() {
     dataObj["jenisSurat"] = "asal-usul";
 
     try {
+      // ==================================================
+      // 🔥 SIMPAN PENGAJUAN KE FIRESTORE (Riwayat User)
+      // ==================================================
       await addDoc(collection(db, "users", user.uid, "surat_pengajuan"), {
-        ...dataObj,
-        jenisSurat: "asal-usul",
+        uid: user.uid,
+        jenisSurat: "Surat Asal Usul Keluarga",
         status: "diproses",
         tanggal_pengajuan: serverTimestamp(),
-        uid: user.uid,
+        jumlahPengajuan: 1,
+        catatan: "",
+
+        // 🔹 Lampiran rapi
+        lampiran: [
+          {
+            label: "Kartu Keluarga (KK)",
+            url: dataObj["kkFileData"] || "",
+            fileName: dataObj["kkFileName"] || "",
+          },
+        ],
+
+        // Semua input form tetap ikut disimpan
+        ...dataObj,
       });
 
+      // ==================================================
+      // 🔥 KIRIM KE API (Google Apps Script)
+      // ==================================================
       const response = await fetch("/api/surat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -78,7 +98,6 @@ export default function AsalUsulPage() {
 
       alert("Form berhasil dikirim! Data Anda sedang diproses.");
       router.push("/halaman-pengguna");
-
     } catch (error) {
       console.error("Gagal mengirim data:", error);
       alert("Terjadi kesalahan saat mengirim data. Silakan coba lagi nanti.");
