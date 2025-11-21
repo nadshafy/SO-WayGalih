@@ -59,7 +59,7 @@ export async function getPengajuanData(): Promise<Pengajuan[]> {
       alamat_lembaga: d.alamat_lembaga,
       kecamatan: d.kecamatan,
       catatan: d.catatan,
-      lampiran: d.lampiran ?? [],
+      lampiran: Array.isArray(d.lampiran) ? d.lampiran : [],
     };
   }) as Pengajuan[];
 }
@@ -74,7 +74,10 @@ export async function tambahPengajuanSurat(uid: string, data: any) {
     alamat_lembaga: data.alamat_lembaga ?? "",
     kecamatan: data.kecamatan ?? "",
     nama_pendiri: data.nama_pendiri ?? "",
-    lampiran: data.lampiran ?? [],
+    lampiran: Object.entries(data.lampiran ?? {}).map(([label, url]) => ({
+      label,
+      url,
+    })),
     status: "diproses",
     catatan: "",
     tanggal_pengajuan: serverTimestamp(),
