@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  collection,
+  collectionGroup,
   onSnapshot,
   getDocs,
   Timestamp,
@@ -34,21 +34,6 @@ export const DASHBOARD_TAB_ITEMS: DashboardTabItem[] = [
   { key: "tahunan", label: "Statistik Tahunan" },
 ];
 
-export const DASHBOARD_DATASET: DashboardChartMap = {
-  harian: {
-    labels: ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"],
-    data: [80, 65, 100, 75, 90, 55, 70],
-  },
-  mingguan: {
-    labels: ["Minggu 1", "Minggu 2", "Minggu 3", "Minggu 4"],
-    data: [350, 420, 480, 520],
-  },
-  tahunan: {
-    labels: ["2020", "2021", "2022", "2023", "2024"],
-    data: [400, 460, 530, 590, 640],
-  },
-};
-
 export const DASHBOARD_SUMMARY: DashboardSummaryCard[] = [
   { label: "Pengajuan Baru", value: 0, trend: "" },
   { label: "Pengajuan Selesai", value: 0, trend: "" },
@@ -58,7 +43,7 @@ export const DASHBOARD_SUMMARY: DashboardSummaryCard[] = [
 export function subscribeDashboardSummary(
   callback: (data: DashboardSummaryCard[]) => void
 ) {
-  const q = collection(db, "surat_pengajuan");
+  const q = collectionGroup(db, "surat_pengajuan");
 
   const unsubscribe = onSnapshot(
     q,
@@ -69,12 +54,15 @@ export function subscribeDashboardSummary(
 
       snapshot.forEach((docSnap) => {
         const data = docSnap.data();
-        const status = (data.status || "").toString().toLowerCase();
+        const status = (data.status || "").toLowerCase();
 
-        if (status === "selesai") totalSelesai++;
-        else if (status === "ditolak") totalMenunggu++;
-        else if (status === "diproses" || status === "menunggu") totalMenunggu++;
-        else totalBaru++;
+        if (status.includes("selesai")) {
+          totalSelesai++;
+        } else if (status.includes("ditolak")) {
+          totalMenunggu++;
+        } else {
+          totalMenunggu++; 
+        }
       });
 
       const payload: DashboardSummaryCard[] = [
@@ -94,7 +82,7 @@ export function subscribeDashboardSummary(
 }
 
 export async function getDashboardDataset(): Promise<DashboardChartMap> {
-  const snapshot = await getDocs(collection(db, "surat_pengajuan"));
+  const snapshot = await getDocs(collectionGroup(db, "surat_pengajuan"));
   const docs = snapshot.docs.map((d) => d.data());
 
   const hariLabels = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
@@ -104,9 +92,9 @@ export async function getDashboardDataset(): Promise<DashboardChartMap> {
     const t = d.tanggal_pengajuan;
     if (t instanceof Timestamp) {
       const date = t.toDate();
-      const day = date.getDay(); 
-      const index = day === 0 ? 6 : day - 1; 
-      harian[index] = (harian[index] || 0) + 1;
+      const day = date.getDay();
+      const index = day === 0 ? 6 : day - 1;
+      harian[index]++;
     }
   });
 
@@ -118,7 +106,13 @@ export async function getDashboardDataset(): Promise<DashboardChartMap> {
 
   return {
     harian: { labels: hariLabels, data: harian },
-    mingguan: { labels: ["Minggu 1", "Minggu 2", "Minggu 3", "Minggu 4"], data: mingguan },
-    tahunan: { labels: ["2021", "2022", "2023", "2024", "2025"], data: tahunan },
+    mingguan: {
+      labels: ["Minggu 1", "Minggu 2", "Minggu 3", "Minggu 4"],
+      data: mingguan,
+    },
+    tahunan: {
+      labels: ["2021", "2022", "2023", "2024", "2025"],
+      data: tahunan,
+    },
   };
 }
