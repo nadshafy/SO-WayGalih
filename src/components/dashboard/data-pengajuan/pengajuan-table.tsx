@@ -51,7 +51,7 @@ const PengajuanTable = ({ items, onApprove, onReject, onViewDetail }: PengajuanT
             return (
               <tr key={item.id} className="text-slate-600">
                 <td className="px-4 py-3 font-semibold text-slate-700">
-                  {item.nama ?? item.nama_pendiri}
+                  {item.nama ?? item.nama_pendiri ?? item.nama_anak}
                 </td>
                 <td className="px-4 py-3">{item.jenisSurat}</td>
                 <td className="px-4 py-3">{formattedDate}</td>

@@ -19,6 +19,7 @@ export interface Pengajuan {
   id: string;
   userId: string;
   nama: string;
+  nama_anak: string;
   nama_pendiri: string;
   jenisSurat: string;
   tanggal_pengajuan: string;
@@ -50,6 +51,7 @@ export async function getPengajuanData(): Promise<Pengajuan[]> {
       id: doc.id,
       userId: userId,
       nama: d.nama,
+      nama_anak: d.nama_anak,
       nama_pendiri: d.nama_pendiri,
       jenisSurat: d.jenisSurat,
       tanggal_pengajuan: d.tanggal_pengajuan,

@@ -66,7 +66,7 @@ const PengajuanDetail = ({ detail, statusLabel }: PengajuanDetailProps) => {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="text-xs uppercase tracking-wide text-slate-400 sm:text-sm">Nama Pemohon</p>
-              <h2 className="text-xl font-semibold text-[#0a3d91] sm:text-2xl">{detail.nama ?? detail.nama_pendiri}</h2>
+              <h2 className="text-xl font-semibold text-[#0a3d91] sm:text-2xl">{detail.nama ?? detail.nama_pendiri ?? detail.nama_anak}</h2>
               <p className="mt-2 text-sm text-slate-500">
                 NIK: <span className="font-semibold">{detail.nik}</span>
               </p>
