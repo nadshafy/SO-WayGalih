@@ -148,8 +148,9 @@ export default function DataPengajuan() {
     handleRejectModalClose();
   };
 
+  // ✅ PERBAIKAN TERPENTING (URL DETAIL BENAR SESUAI STRUKTUR NESTED)
   const handleViewDetail = (item: Pengajuan) => {
-    router.push(`/dashboard/data-pengajuan/${item.id}`);
+    router.push(`/dashboard/data-pengajuan/${item.userId}/${item.id}`);
   };
 
   const handleRejectModalOpen = (item: Pengajuan) => {

@@ -15,12 +15,7 @@ const statusStyles: Record<string, string> = {
   default: "bg-slate-100 text-slate-600",
 };
 
-const PengajuanTable = ({
-  items,
-  onApprove,
-  onReject,
-  onViewDetail,
-}: PengajuanTableProps) => {
+const PengajuanTable = ({ items, onApprove, onReject, onViewDetail }: PengajuanTableProps) => {
   return (
     <div className="mt-6 overflow-x-auto">
       <table className="min-w-full divide-y divide-slate-200 text-sm">
@@ -39,8 +34,8 @@ const PengajuanTable = ({
             const badgeClass = lowerStatus.includes("selesai")
               ? statusStyles.selesai
               : lowerStatus.includes("ditolak")
-                ? statusStyles.ditolak
-                : statusStyles.default;
+              ? statusStyles.ditolak
+              : statusStyles.default;
 
             const timestamp = item.tanggal_pengajuan as any;
             let formattedDate = "Data tanggal tidak valid";
@@ -95,12 +90,10 @@ const PengajuanTable = ({
               </tr>
             );
           })}
+
           {items.length === 0 && (
             <tr>
-              <td
-                colSpan={5}
-                className="px-4 py-6 text-center text-sm text-slate-400"
-              >
+              <td colSpan={5} className="px-4 py-6 text-center text-sm text-slate-400">
                 Tidak ada pengajuan yang sesuai dengan filter saat ini.
               </td>
             </tr>
