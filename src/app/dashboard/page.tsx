@@ -7,7 +7,7 @@ import { useAuth } from "@/src/contexts/auth-context";
 import { DashboardHeader, SummaryCards, StatsChart } from "@/src/components/dashboard";
 import { type DashboardTabKey, type DashboardSummaryCard, type DashboardChartMap } from "@/src/lib/dashboard-data";
 import { db } from "@/src/lib/firebase/init";
-import { doc, getDoc, collection, onSnapshot, Timestamp } from "firebase/firestore";
+import { doc, getDoc, Timestamp, collectionGroup, onSnapshot } from "firebase/firestore";
 
 const DEFAULT_TAB: DashboardTabKey = "harian";
 
@@ -27,16 +27,12 @@ export default function Dashboard() {
   useEffect(() => {
     const checkAdminRole = async () => {
       if (!user) return;
-      try {
-        const userRef = doc(db, "users", user.uid);
-        const userSnap = await getDoc(userRef);
-        if (userSnap.exists() && userSnap.data().role === "admin") setIsAdmin(true);
-        else {
-          setIsAdmin(false);
-          router.replace("/halaman-pengguna");
-        }
-      } catch {
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists() && userSnap.data().role === "admin") setIsAdmin(true);
+      else {
         setIsAdmin(false);
+        router.replace("/halaman-pengguna");
       }
     };
     checkAdminRole();
@@ -45,7 +41,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (!isAdmin) return;
 
-    const unsubscribe = onSnapshot(collection(db, "surat_pengajuan"), (snapshot) => {
+    const unsubscribe = onSnapshot(collectionGroup(db, "surat_pengajuan"), (snapshot) => {
       let totalBaru = 0;
       let totalSelesai = 0;
       let totalMenunggu = 0;
@@ -70,21 +66,21 @@ export default function Dashboard() {
 
         if (date) {
           const day = date.getDay();
-          const index = day === 0 ? 6 : day - 1;
-          harian[index]++;
+          const dayIndex = day === 0 ? 6 : day - 1;
+          harian[dayIndex]++;
 
-          const week = Math.ceil(date.getDate() / 7) - 1;
-          if (week >= 0 && week < 4) mingguan[week]++;
+          const weekIndex = Math.ceil(date.getDate() / 7) - 1;
+          if (weekIndex >= 0 && weekIndex < 4) mingguan[weekIndex]++;
 
-          const yearIdx = tahunLabels.indexOf(date.getFullYear());
-          if (yearIdx !== -1) tahunan[yearIdx]++;
+          const yearIndex = tahunLabels.indexOf(date.getFullYear());
+          if (yearIndex !== -1) tahunan[yearIndex]++;
         }
       });
 
       setSummaryData([
-        { label: "Pengajuan Baru", value: totalBaru, trend: "+update realtime" },
-        { label: "Pengajuan Selesai", value: totalSelesai, trend: "+update realtime" },
-        { label: "Menunggu Verifikasi", value: totalMenunggu, trend: "Perlu tindak lanjut" },
+        { label: "Pengajuan Baru", value: totalBaru, trend: "+realtime" },
+        { label: "Pengajuan Selesai", value: totalSelesai, trend: "+realtime" },
+        { label: "Menunggu Verifikasi", value: totalMenunggu, trend: "+realtime" },
       ]);
 
       setChartData({
