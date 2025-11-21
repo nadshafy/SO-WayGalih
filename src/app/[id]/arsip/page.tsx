@@ -7,7 +7,6 @@ import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "@/src/lib/firebase/init";
 import Footer from "@/src/components/footer";
 import AuthGuard from "@/src/components/auth/auth-guard";
-
 import { useAuth } from "@/src/contexts/auth-context";
 
 type ArchiveItem = {
@@ -15,35 +14,30 @@ type ArchiveItem = {
   tanggal_pengajuan: string;
   jenisSurat: string;
   jumlahPengajuan: number;
-  status: "diproses" | "ditolak" | "selesai";
+  status: string;
   catatan?: string;
 };
 
 const STATUS_CONFIG: Record<
-  ArchiveItem["status"],
+  string,
   { label: string; bg: string; text: string }
 > = {
-  diproses: {
-    label: "Sedang Diproses",
-    bg: "bg-amber-100",
-    text: "text-amber-700",
-  },
-  ditolak: {
-    label: "Ditolak",
-    bg: "bg-rose-100",
-    text: "text-rose-700",
-  },
-  selesai: {
-    label: "Selesai",
-    bg: "bg-emerald-100",
-    text: "text-emerald-700",
-  },
+  diproses: { label: "Sedang Diproses", bg: "bg-amber-100", text: "text-amber-700" },
+  ditolak: { label: "Ditolak", bg: "bg-rose-100", text: "text-rose-700" },
+  selesai: { label: "Selesai", bg: "bg-emerald-100", text: "text-emerald-700" }
 };
 
 export default function ArchivePage() {
   const { user } = useAuth();
   const [archive, setArchive] = useState<ArchiveItem[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const normalizeStatus = (value: string): string => {
+    const v = value.toLowerCase();
+    if (v.includes("selesai")) return "selesai";
+    if (v.includes("ditolak")) return "ditolak";
+    return "diproses";
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -53,8 +47,6 @@ export default function ArchivePage() {
       }
 
       try {
-        console.log("User UID di arsip:", user.uid);
-
         const q = query(
           collection(db, "users", user.uid, "surat_pengajuan"),
           orderBy("tanggal_pengajuan", "desc")
@@ -67,29 +59,24 @@ export default function ArchivePage() {
 
           let formattedDate = "Tanggal tidak valid";
           if (d.tanggal_pengajuan?.toDate) {
-            formattedDate = d.tanggal_pengajuan.toDate().toLocaleDateString(
-              "id-ID",
-              {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-              }
-            );
+            formattedDate = d.tanggal_pengajuan.toDate().toLocaleDateString("id-ID", {
+              day: "numeric",
+              month: "long",
+              year: "numeric"
+            });
           }
 
           return {
             id: doc.id,
             jenisSurat: d.jenisSurat || "Tidak ada jenis",
             jumlahPengajuan: d.jumlahPengajuan || 0,
-            status: d.status || "diproses",
+            status: normalizeStatus(d.status || "diproses"),
             catatan: d.catatan,
-            tanggal_pengajuan: formattedDate,
+            tanggal_pengajuan: formattedDate
           };
         });
 
         setArchive(data);
-      } catch (e) {
-        console.error("Gagal mengambil riwayat:", e);
       } finally {
         setLoading(false);
       }
@@ -106,6 +93,7 @@ export default function ArchivePage() {
 
       <AuthGuard redirectIfAdmin="/dashboard">
         <div className="flex min-h-screen flex-col bg-[#f4f6f9] text-slate-800">
+
           <Link
             href="/halaman-pengguna"
             aria-label="Kembali"
@@ -132,9 +120,7 @@ export default function ArchivePage() {
               </div>
 
               {loading ? (
-                <div className="p-8 text-center text-slate-500">
-                  Memuat data...
-                </div>
+                <div className="p-8 text-center text-slate-500">Memuat data...</div>
               ) : archive.length === 0 ? (
                 <div className="p-8 text-center text-slate-500">
                   Belum ada riwayat pengajuan surat.
@@ -151,24 +137,25 @@ export default function ArchivePage() {
                         <th className="px-6 py-4">Catatan</th>
                       </tr>
                     </thead>
+
                     <tbody className="divide-y divide-slate-100">
                       {archive.map((item) => (
-                        <tr
-                          key={item.id}
-                          className="align-top hover:bg-slate-50/60"
-                        >
+                        <tr key={item.id} className="align-top hover:bg-slate-50/60">
                           <td className="px-6 py-4">{item.tanggal_pengajuan}</td>
                           <td className="px-6 py-4">{item.jenisSurat}</td>
-                          <td className="px-6 py-4 text-center">
-                            {item.jumlahPengajuan}
-                          </td>
+                          <td className="px-6 py-4 text-center">{item.jumlahPengajuan}</td>
+
                           <td className="px-6 py-4">
                             <span
-                              className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${STATUS_CONFIG[item.status].bg} ${STATUS_CONFIG[item.status].text}`}
+                              className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold capitalize 
+                                ${STATUS_CONFIG[item.status]?.bg ?? "bg-gray-200"} 
+                                ${STATUS_CONFIG[item.status]?.text ?? "text-gray-600"}
+                              `}
                             >
-                              {STATUS_CONFIG[item.status].label}
+                              {STATUS_CONFIG[item.status]?.label ?? item.status}
                             </span>
                           </td>
+
                           <td className="px-6 py-4">{item.catatan ?? "-"}</td>
                         </tr>
                       ))}
